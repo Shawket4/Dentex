@@ -1,5 +1,7 @@
-import 'package:clinic_managment/main.dart';
-import 'package:clinic_managment/screens/add_doctor_screen.dart';
+import 'package:clinic_management/add_screens/add_appointment.dart';
+import 'package:clinic_management/add_screens/add_patient.dart';
+import 'package:clinic_management/main.dart';
+import 'package:clinic_management/add_screens/add_doctor_screen.dart';
 import 'package:flutter/material.dart';
 
 Widget SideMenu(BuildContext context) {
@@ -34,25 +36,78 @@ Widget SideMenu(BuildContext context) {
             ],
           ),
         ),
-        userInfo.permission == 2 ? Padding(
-          padding: const EdgeInsets.only(left: 10, top: 5,),
+        userInfo.permission == 2
+            ? Padding(
+                padding: const EdgeInsets.only(
+                  left: 10,
+                  top: 5,
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const AddDoctorScreen()));
+                  },
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Add Doctor",
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFFDFFFC)),
+                    ),
+                  ),
+                ),
+              )
+            : Container(),
+        Padding(
+          padding: const EdgeInsets.only(
+            left: 10,
+            top: 5,
+          ),
           child: TextButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDoctorScreen()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AddPatientScreen()));
             },
             child: const Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "Add Doctor",
+                "Add Patient",
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFFFDFFFC)
-                ),
+                    color: Color(0xFFFDFFFC)),
               ),
             ),
           ),
-        ) : Container(),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(
+            left: 10,
+            top: 5,
+          ),
+          child: TextButton(
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const AddAppointmentScreen()));
+            },
+            child: const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Add Appointment",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFFDFFFC)),
+              ),
+            ),
+          ),
+        ),
       ],
     ),
   );

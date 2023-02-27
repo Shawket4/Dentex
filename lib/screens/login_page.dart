@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:clinic_managment/screens/home_screen.dart';
-import 'package:clinic_managment/screens/sign_up.dart';
+import 'package:clinic_management/screens/home_screen.dart';
+import 'package:clinic_management/screens/sign_up.dart';
+import 'package:lottie/lottie.dart';
 import '../main.dart';
 
 class LoginPage extends StatefulWidget {
@@ -13,7 +14,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-
+  late BuildContext dialogContext;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,70 +109,117 @@ class _LoginPageState extends State<LoginPage> {
                   "Login",
                 ),
                 onPressed: () async {
-                  var response = await dio.post("$ServerIP/api/login", data: {
-                    "username": usernameController.text,
-                    "password": passwordController.text
-                  });
-                  var message = response.data["message"];
-                  if (message == "Login Successful") {
-                    var jwt = response.data["jwt"];
-                    print(jwt);
-                    final bool status = await SetJwt(jwt);
-                    if (status) {
-                      dio.options.headers['Content-Type'] = "application/json";
-                      dio.options.headers['Authorization'] = "Bearer $jwt";
-                      Navigator.pushReplacement(context,
-                          MaterialPageRoute(builder: (_) => HomeScreen()));
+                  try {
+                    var response = await dio.post("$ServerIP/api/login", data: {
+                      "username": usernameController.text,
+                      "password": passwordController.text
+                    });
+                    var message = response.data["message"];
+                    if (message == "Login Successful") {
+                      var jwt = response.data["jwt"];
+                      final bool status = await SetJwt(jwt);
+                      if (status) {
+                        dio.options.headers['Content-Type'] =
+                            "application/json";
+                        dio.options.headers['Authorization'] = "Bearer $jwt";
+                        Navigator.pushReplacement(context,
+                            MaterialPageRoute(builder: (_) => HomeScreen()));
+                      }
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: SizedBox(
+                              height: 400,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: Center(
+                                      // Display lottie animation
+                                      child: Lottie.asset(
+                                        "assets/lottie/Error.json",
+                                        height: 300,
+                                        width: 300,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(dialogContext);
+                                      Navigator.pop(dialogContext);
+                                    },
+                                    child: const Text(
+                                      "Close",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
                     }
-                  } else if (message == "Email not found") {
+                  } catch (e) {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        return AlertDialog(
+                        dialogContext = context;
+                        return Dialog(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          title: const Text("Email not found"),
-                          content: const Text("Please insert correct email"),
-                          actions: <Widget>[
-                            TextButton(
-                              child: const Text(
-                                'Ok',
-                                style: TextStyle(
-                                  color: Color(0xFF5bc0be),
+                          child: SizedBox(
+                            height: 400,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: Center(
+                                    // Display lottie animation
+                                    child: Lottie.asset(
+                                      "assets/lottie/Error.json",
+                                      height: 200,
+                                      width: 200,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
+                                const Text(
+                                  "Invalid Credentials",
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 30,
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(dialogContext);
+                                  },
+                                  child: const Text(
+                                    "Close",
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        );
-                      },
-                    );
-                  } else if (message == "Incorrect password") {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
                           ),
-                          title: const Text("Invalid password"),
-                          content: const Text("Please insert correct password"),
-                          actions: <Widget>[
-                            TextButton(
-                              child: const Text(
-                                'Ok',
-                                style: TextStyle(
-                                  color: Color(0xFF5bc0be),
-                                ),
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
                         );
                       },
                     );

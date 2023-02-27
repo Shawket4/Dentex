@@ -1,7 +1,7 @@
-import 'package:clinic_managment/components/drawer.dart';
+import 'package:clinic_management/components/drawer.dart';
 import 'package:flutter/material.dart';
-import 'package:clinic_managment/screens/login_page.dart';
-import 'package:clinic_managment/main.dart';
+import 'package:clinic_management/screens/login_page.dart';
+import 'package:clinic_management/main.dart';
 import 'package:lottie/lottie.dart';
 
 class HomeScreen extends StatefulWidget {

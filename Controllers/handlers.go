@@ -59,7 +59,7 @@ func RegisterPatient(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	c.JSON(http.StatusOK, patient)
+	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
 }
 
 func RegisterAppointment(c *gin.Context) {

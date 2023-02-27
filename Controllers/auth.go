@@ -49,7 +49,7 @@ func Login(c *gin.Context) {
 	token, err := Models.LoginCheck(user.Username, user.Password)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "username or password is incorrect."})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "username or password is incorrect."})
 		return
 	}
 

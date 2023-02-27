@@ -1,9 +1,9 @@
 // ignore_for_file: unused_local_variable, non_constant_identifier_names, constant_identifier_names
 
-import 'package:clinic_managment/screens/add_doctor_screen.dart';
+import 'package:clinic_management/add_screens/add_doctor_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:clinic_managment/screens/home_screen.dart';
-import 'package:clinic_managment/screens/login_page.dart';
+import 'package:clinic_management/screens/home_screen.dart';
+import 'package:clinic_management/screens/login_page.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
@@ -40,9 +40,8 @@ Dio dio = Dio();
 
 Future<UserInfo> get GetUserInfo async {
   var response = await dio.get("$ServerIP/api/protected/user");
- String user_name = response.data["data"]["username"].toString();
- int  permission = response.data["data"]["permission"];
-  
+  String user_name = response.data["data"]["username"].toString();
+  int permission = response.data["data"]["permission"];
 
   userInfo.username = user_name;
   userInfo.permission = permission;
@@ -54,7 +53,7 @@ Future<bool> get Logout async {
   return await prefs.remove("jwt");
 }
 
-const String ServerIP = "http://172.20.10.6:5505";
+const String ServerIP = "http://localhost:5505";
 
 class Router extends StatefulWidget {
   const Router({Key? key}) : super(key: key);

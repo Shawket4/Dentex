@@ -1,4 +1,4 @@
-import 'package:clinic_managment/screens/login_page.dart';
+import 'package:clinic_management/screens/login_page.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import '../main.dart';
