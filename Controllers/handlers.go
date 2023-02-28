@@ -69,12 +69,29 @@ func RegisterAppointment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	if user.Permission != 2 {
+		appointment.DoctorID = user.ID
+	}
 	if err := Models.DB.Model(&Models.Appointment{}).Create(&appointment).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	c.JSON(http.StatusOK, appointment)
+	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
 }
 
 func GetAllDoctors(c *gin.Context) {
