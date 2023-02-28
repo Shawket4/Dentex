@@ -1,0 +1,7 @@
+DB_HOST=127.0.0.1                        
+DB_USER=postgres
+DB_PASSWORD=SocialApp2
+DB_NAME=Clinic
+DB_PORT=5432
+API_SECRET=shawket2@
+TOKEN_DAY_LIFESPAN=7
