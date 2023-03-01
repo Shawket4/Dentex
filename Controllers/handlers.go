@@ -135,7 +135,7 @@ func ChangeAppointmentCompletionStatus(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	appointment.IsPaid = true
+	appointment.IsPaid = input.CompletionStatus
 	appointment.IsCompleted = input.CompletionStatus
 	if err := Models.DB.Save(&appointment).Error; err != nil {
 		c.String(http.StatusBadRequest, "Couldn't Update Appointment Payment Status")

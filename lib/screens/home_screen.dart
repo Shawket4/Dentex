@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:clinic_management/screens/login_page.dart';
 import 'package:clinic_management/main.dart';
 import 'package:lottie/lottie.dart';
+import 'package:intl/intl.dart' as intl;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -80,7 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Text(
-                                "${appointment.date!.year}/${appointment.date!.month}/${appointment.date!.day} & ${appointment.date!.hour}:${appointment.date!.minute}",
+                                intl.DateFormat("yyyy/MM/dd & h:mm a")
+                                    .format(appointment.date!),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
