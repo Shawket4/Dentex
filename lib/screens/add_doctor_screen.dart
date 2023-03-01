@@ -1,8 +1,9 @@
+// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:clinic_managment/screens/home_screen.dart';
-import 'package:clinic_managment/screens/sign_up.dart';
 import 'package:lottie/lottie.dart';
 import '../main.dart';
+import 'home_screen.dart';
 
 class AddDoctorScreen extends StatefulWidget {
   const AddDoctorScreen({super.key});
