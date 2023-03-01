@@ -24,6 +24,10 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: const Color(0xFF011627),
         title: const Text(
           "Login",
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: Padding(
@@ -36,16 +40,20 @@ class _LoginPageState extends State<LoginPage> {
                 child: const Text(
                   'Clinic Manager',
                   style: TextStyle(
-                      // color: Color(0xFF011627),
-                      fontWeight: FontWeight.w500,
-                      fontSize: 30),
+                    // color: Color(0xFF011627),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 28,
+                  ),
                 )),
             Container(
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(10),
                 child: const Text(
                   'Sign in',
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 )),
             Container(
               padding: const EdgeInsets.all(10),
@@ -107,6 +115,11 @@ class _LoginPageState extends State<LoginPage> {
                     backgroundColor: const Color(0xFF011627)),
                 child: const Text(
                   "Login",
+                  style: TextStyle(
+                    fontFamily: 'Calibri',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                  ),
                 ),
                 onPressed: () async {
                   try {

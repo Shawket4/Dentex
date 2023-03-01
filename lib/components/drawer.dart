@@ -1,7 +1,10 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:clinic_management/add_screens/add_appointment.dart';
 import 'package:clinic_management/add_screens/add_patient.dart';
 import 'package:clinic_management/main.dart';
 import 'package:clinic_management/add_screens/add_doctor_screen.dart';
+import 'package:clinic_management/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 Widget SideMenu(BuildContext context) {
@@ -16,6 +19,7 @@ Widget SideMenu(BuildContext context) {
               const Padding(
                 padding: EdgeInsets.all(8.0),
                 child: CircleAvatar(
+                  backgroundColor: Colors.white,
                   backgroundImage: AssetImage("assets/images/user_avatar.png"),
                   radius: 25,
                 ),
@@ -36,6 +40,30 @@ Widget SideMenu(BuildContext context) {
             ],
           ),
         ),
+        userInfo.permission == 1
+            ? Padding(
+                padding: const EdgeInsets.only(
+                  left: 10,
+                  top: 5,
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (_) => const HomeScreen()));
+                  },
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Dashboard",
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFFDFFFC)),
+                    ),
+                  ),
+                ),
+              )
+            : Container(),
         userInfo.permission == 2
             ? Padding(
                 padding: const EdgeInsets.only(

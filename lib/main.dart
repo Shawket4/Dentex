@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:clinic_management/screens/home_screen.dart';
 import 'package:clinic_management/screens/login_page.dart';
 import 'package:dio/dio.dart';
+import 'package:material_color_generator/material_color_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
 
@@ -38,22 +39,12 @@ Future<bool> SetJwt(String jwt) async {
 
 Dio dio = Dio();
 
-Future<UserInfo> get GetUserInfo async {
-  var response = await dio.get("$ServerIP/api/protected/user");
-  String user_name = response.data["data"]["username"].toString();
-  int permission = response.data["data"]["permission"];
-
-  userInfo.username = user_name;
-  userInfo.permission = permission;
-  return userInfo;
-}
-
 Future<bool> get Logout async {
   final SharedPreferences prefs = await _prefs;
   return await prefs.remove("jwt");
 }
 
-const String ServerIP = "http://localhost:5505";
+const String ServerIP = "http://144.126.234.206:5505";
 
 class Router extends StatefulWidget {
   const Router({Key? key}) : super(key: key);
@@ -71,7 +62,15 @@ class _RouterState extends State<Router> {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
+        fontFamily: "Inter",
         primaryColor: const Color(0xFF0b132b),
+        colorScheme: ColorScheme.fromSwatch().copyWith(
+          primary: const Color(0xFF0b132b),
+          secondary: const Color(0xFF011627),
+        ),
+        primarySwatch: generateMaterialColor(
+          color: const Color(0xFF0b132b),
+        ),
       ),
       debugShowCheckedModeBanner: false,
       home: FutureBuilder(

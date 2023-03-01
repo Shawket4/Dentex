@@ -133,5 +133,13 @@ func GetDoctorAppointments(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 	}
+	for i, s := range appointments {
+		var patientName string
+		if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", s.PatientID).Select("name").Find(&patientName); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+		}
+		appointments[i].PatientName = patientName
+	}
 	c.JSON(http.StatusOK, appointments)
 }
