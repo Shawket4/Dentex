@@ -12,5 +12,6 @@ type Appointment struct {
 	PatientName string  `json:"patient_name" gorm:"-"`
 	Treatment   string  `json:"treatment"`
 	Price       float64 `json:"price"`
-	Paid        bool    `json:"paid"`
+	IsCompleted bool    `json:"is_completed"`
+	IsPaid      bool    `json:"is_paid"`
 }

@@ -94,6 +94,57 @@ func RegisterAppointment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
 }
 
+func ChangeAppointmentPaymentStatus(c *gin.Context) {
+	var input struct {
+		AppointmentID uint `json:"appointment_id"`
+		PaymentStatus bool `json:"payment_status"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.String(http.StatusBadRequest, "Couldn't Parse Input")
+		c.Abort()
+		return
+	}
+	var appointment Models.Appointment
+	if err := Models.DB.Model(&Models.Appointment{}).Where("id = ?", input.AppointmentID).Find(&appointment).Error; err != nil {
+		c.String(http.StatusBadRequest, "Couldn't Find Appointment")
+		c.Abort()
+		return
+	}
+	appointment.IsPaid = input.PaymentStatus
+	if err := Models.DB.Save(&appointment).Error; err != nil {
+		c.String(http.StatusBadRequest, "Couldn't Update Appointment Payment Status")
+		c.Abort()
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Payment Status Updated Successfully"})
+}
+
+func ChangeAppointmentCompletionStatus(c *gin.Context) {
+	var input struct {
+		AppointmentID    uint `json:"appointment_id"`
+		CompletionStatus bool `json:"completion_status"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.String(http.StatusBadRequest, "Couldn't Parse Input")
+		c.Abort()
+		return
+	}
+	var appointment Models.Appointment
+	if err := Models.DB.Model(&Models.Appointment{}).Where("id = ?", input.AppointmentID).Find(&appointment).Error; err != nil {
+		c.String(http.StatusBadRequest, "Couldn't Find Appointment")
+		c.Abort()
+		return
+	}
+	appointment.IsPaid = true
+	appointment.IsCompleted = input.CompletionStatus
+	if err := Models.DB.Save(&appointment).Error; err != nil {
+		c.String(http.StatusBadRequest, "Couldn't Update Appointment Payment Status")
+		c.Abort()
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Payment Status Updated Successfully"})
+}
+
 func GetAllDoctors(c *gin.Context) {
 	var doctors []Models.Doctor
 	if err := Models.DB.Model(&Models.Doctor{}).Find(&doctors).Error; err != nil {
