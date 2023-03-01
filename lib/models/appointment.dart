@@ -5,4 +5,5 @@ class Appointment {
   String? treatment;
   double? price;
   bool? isPaid;
+  bool? isCompleted;
 }

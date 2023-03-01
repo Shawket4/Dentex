@@ -209,6 +209,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                       }).timeout(const Duration(seconds: 5));
                       if (response.data["message"] ==
                           "Registered Successfully") {
+                        // ignore: use_build_context_synchronously
                         showDialog(
                             context: context,
                             barrierDismissible: false,
@@ -261,6 +262,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                               );
                             });
                       } else {
+                        // ignore: use_build_context_synchronously
                         showDialog(
                             context: context,
                             barrierDismissible: false,

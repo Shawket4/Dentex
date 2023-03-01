@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:clinic_management/screens/home_screen.dart';
 import 'package:clinic_management/screens/sign_up.dart';

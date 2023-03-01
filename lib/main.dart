@@ -1,11 +1,10 @@
 // ignore_for_file: unused_local_variable, non_constant_identifier_names, constant_identifier_names
-
-import 'package:clinic_management/add_screens/add_doctor_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:clinic_management/screens/home_screen.dart';
 import 'package:clinic_management/screens/login_page.dart';
 import 'package:dio/dio.dart';
 import 'package:material_color_generator/material_color_generator.dart';
+// import 'package:material_color_generator/material_color_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
 
