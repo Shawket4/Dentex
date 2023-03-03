@@ -38,6 +38,8 @@ func ConnectDataBase() {
 
 	DB.AutoMigrate(&User{})
 	DB.AutoMigrate(&Doctor{})
+	DB.AutoMigrate(&Tooth{})
+	DB.AutoMigrate(&TeethMap{})
 	DB.AutoMigrate(&Patient{})
 	DB.AutoMigrate(&Appointment{})
 }

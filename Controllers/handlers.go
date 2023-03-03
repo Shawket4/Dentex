@@ -49,16 +49,33 @@ func RegisterDoctor(c *gin.Context) {
 
 func RegisterPatient(c *gin.Context) {
 	var patient Models.Patient
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
 	if err := c.ShouldBindBodyWith(&patient, binding.JSON); err != nil {
 		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
+	patient.DoctorID = user.ID
+	patient.PatientTeethMap = Models.CreatePatientTeethMap(patient)
 	if err := Models.DB.Model(&Models.Patient{}).Create(&patient).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
 }
 
@@ -159,8 +176,78 @@ func GetAllPatients(c *gin.Context) {
 	if err := Models.DB.Model(&Models.Patient{}).Find(&patients).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
+		return
 	}
 	c.JSON(http.StatusOK, patients)
+}
+
+func EditTeethMap(c *gin.Context) {
+	var input struct {
+		PatientID       uint            `json:"patient_id"`
+		PatientTeethMap Models.TeethMap `json:"patient_teeth_map"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	var patient Models.Patient
+	if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", input.PatientID).Find(&patient).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	patient.PatientTeethMap = input.PatientTeethMap
+	if err := Models.DB.Model(&Models.Patient{}).Save(&patient).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Patient Updated Successfully"})
+}
+
+func GetDoctorPatients(c *gin.Context) {
+	var patients []Models.Patient
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	if err := Models.DB.Model(&Models.Patient{}).Where("doctor_id = ?", user.ID).Preload("PatientTeethMap").Find(&patients).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+	}
+	c.JSON(http.StatusOK, patients)
+}
+
+func GetPatientTeethMap(c *gin.Context) {
+	var input struct {
+		PatientID uint `json:"patient_id"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	var patient Models.Patient
+	if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", input.PatientID).Preload("PatientTeethMap").Find(&patient).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+	}
+	if err := Models.DB.Model(&Models.TeethMap{}).Where("id = ?", patient.PatientTeethMap.ID).Preload("Teeth").Find(&patient.PatientTeethMap).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+	}
+	c.JSON(http.StatusOK, patient.PatientTeethMap)
 }
 
 func GetDoctorAppointments(c *gin.Context) {
@@ -179,7 +266,7 @@ func GetDoctorAppointments(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	fmt.Println(user.ID)
+
 	if err := Models.DB.Model(&Models.Appointment{}).Where("doctor_id = ?", user.ID).Find(&appointments).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
