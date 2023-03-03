@@ -25,6 +25,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         appointment.isPaid = obj["paid"];
         appointments.add(appointment);
       }
+      setState(() {});
     });
     super.initState();
   }

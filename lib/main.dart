@@ -1,4 +1,5 @@
 // ignore_for_file: unused_local_variable, non_constant_identifier_names, constant_identifier_names
+import 'package:clinic_management/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:clinic_management/screens/home_screen.dart';
 import 'package:clinic_management/screens/login_page.dart';
@@ -14,7 +15,7 @@ void main() {
 
 final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 late String jwt;
-UserInfo userInfo = UserInfo();
+User userInfo = User();
 Future<String> get _getJwt async {
   final SharedPreferences prefs = await _prefs;
   // await prefs.remove("jwt");
@@ -43,7 +44,7 @@ Future<bool> get Logout async {
   return await prefs.remove("jwt");
 }
 
-const String ServerIP = "http://144.126.234.206:5505";
+const String ServerIP = "http://localhost:5505";
 
 class Router extends StatefulWidget {
   const Router({Key? key}) : super(key: key);
@@ -114,7 +115,4 @@ class _RouterState extends State<Router> {
 //     );
 //   }
 // }
-class UserInfo {
-  String username = "";
-  int permission = 0;
-}
+

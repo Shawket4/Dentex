@@ -4,6 +4,7 @@ import 'package:clinic_management/add_screens/add_appointment.dart';
 import 'package:clinic_management/add_screens/add_patient.dart';
 import 'package:clinic_management/main.dart';
 import 'package:clinic_management/add_screens/add_doctor_screen.dart';
+import 'package:clinic_management/screens/doctor_patients.dart';
 import 'package:clinic_management/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -55,6 +56,32 @@ Widget SideMenu(BuildContext context) {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       "Dashboard",
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFFDFFFC)),
+                    ),
+                  ),
+                ),
+              )
+            : Container(),
+        userInfo.permission == 1
+            ? Padding(
+                padding: const EdgeInsets.only(
+                  left: 10,
+                  top: 5,
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const DoctorPatientScreen()));
+                  },
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "My Patients",
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,

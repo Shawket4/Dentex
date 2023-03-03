@@ -1,6 +1,8 @@
 // ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
 
 import 'package:clinic_management/dio_helper.dart';
+import 'package:clinic_management/models/doctor.dart';
+import 'package:clinic_management/models/patient.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:clinic_management/screens/home_screen.dart';
@@ -27,7 +29,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
   @override
   void initState() {
     if (userInfo.permission == 2) {
-      getData("$ServerIP/api/protected/GetAllPatients").then((response) {
+      getData("$ServerIP/api/protected/GetDoctorPatients").then((response) {
         for (var obj in response) {
           Patient patient = Patient();
           patient.name = obj["name"];
@@ -47,7 +49,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         setState(() {});
       });
     } else {
-      getData("$ServerIP/api/protected/GetAllPatients").then((response) {
+      getData("$ServerIP/api/protected/GetDoctorPatients").then((response) {
         for (var obj in response) {
           Patient patient = Patient();
           patient.name = obj["name"];
@@ -500,14 +502,4 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
       ),
     );
   }
-}
-
-class Doctor {
-  String name = "";
-  int id = 0;
-}
-
-class Patient {
-  String name = "";
-  int id = 0;
 }

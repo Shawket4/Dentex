@@ -3,6 +3,7 @@
 import 'package:clinic_management/components/drawer.dart';
 import 'package:clinic_management/dio_helper.dart';
 import 'package:clinic_management/models/appointment.dart';
+import 'package:clinic_management/models/user.dart';
 import 'package:clinic_management/screens/appointment_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:clinic_management/screens/login_page.dart';
@@ -26,8 +27,19 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     isUserLoaded = false;
-    DateTime currentDate = DateTime.now();
-    getData("$ServerIP/api/protected/GetDoctorAppointments").then((response) {
+    super.initState();
+  }
+
+  Future<User> get GetUserInfo async {
+    if (!isUserLoaded) {
+      dynamic response = await dio.get("$ServerIP/api/protected/user");
+      String userName = response.data["data"]["username"].toString();
+      int permission = response.data["data"]["permission"];
+
+      userInfo.username = userName;
+      userInfo.permission = permission;
+      DateTime currentDate = DateTime.now();
+      response = await getData("$ServerIP/api/protected/GetDoctorAppointments");
       for (var obj in response) {
         Appointment appointment = Appointment();
         appointment.id = obj["ID"];
@@ -111,21 +123,9 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
       }
-    });
-    super.initState();
-  }
-
-  Future<UserInfo> get GetUserInfo async {
-    if (!isUserLoaded) {
-      var response = await dio.get("$ServerIP/api/protected/user");
-      String userName = response.data["data"]["username"].toString();
-      int permission = response.data["data"]["permission"];
-
-      userInfo.username = userName;
-      userInfo.permission = permission;
       isUserLoaded = true;
+      setState(() {});
     }
-    setState(() {});
     return userInfo;
   }
 
