@@ -13,10 +13,13 @@ class PatientDetailScreen extends StatefulWidget {
 
 class _PatientDetailScreenState extends State<PatientDetailScreen> {
   List<Tooth> teethMap = [];
+  List<Widget> teethTop = [];
+  List<Widget> teethBottom = [];
   bool isMapLoaded = false;
   @override
   void initState() {
     isMapLoaded = false;
+
     super.initState();
   }
 
@@ -26,7 +29,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           await postData("$ServerIP/api/protected/GetPatientTeethMap", {
         "patient_id": widget.patient.id,
       });
-      print(response);
+
       for (var obj in response["teeth"]) {
         Tooth tooth = Tooth();
         tooth.id = obj["ID"];
@@ -34,8 +37,42 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         tooth.condition = obj["condition"];
         tooth.isTreated = obj["is_treated"];
         teethMap.add(tooth);
+        if (tooth.toothCode[1] == "B") {
+          teethBottom.add(
+            Column(
+              children: [
+                SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: Image.asset("assets/images/teeth/LB1.png")),
+                const SizedBox(
+                  height: 10,
+                ),
+                //Text(tooth.toothCode),
+              ],
+            ),
+          );
+        }
+        if (tooth.toothCode[1] == "T") {
+          teethTop.add(
+            Column(
+              children: [
+                SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: Image.asset("assets/images/teeth/LB1.png")),
+                const SizedBox(
+                  height: 10,
+                ),
+                //Text(tooth.toothCode),
+              ],
+            ),
+          );
+        }
       }
+
       isMapLoaded = true;
+
       setState(() {});
     }
     return "";
@@ -67,24 +104,33 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               ),
             );
           }
-          return ListView.builder(
-            itemCount: teethMap.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(
-                    "Code: ${teethMap[index].toothCode}, Condition: ${teethMap[index].condition}, Treated: ${teethMap[index].isTreated}"),
-              );
-            },
+          return Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: teethTop,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: teethBottom,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       ),
     );
   }
-}
-
-class Tooth {
-  int id = 0;
-  String toothCode = "";
-  String condition = "";
-  bool isTreated = false;
 }
