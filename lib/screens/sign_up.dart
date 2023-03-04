@@ -28,6 +28,10 @@ class _SignUpState extends State<SignUp> {
         backgroundColor: const Color(0xFF0b132b),
         title: const Text(
           "New Account",
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: Padding(

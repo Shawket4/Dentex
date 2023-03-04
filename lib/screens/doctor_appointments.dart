@@ -38,6 +38,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         backgroundColor: const Color(0xFF011627),
         title: const Text(
           "Appointments",
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

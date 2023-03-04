@@ -42,128 +42,38 @@ Widget SideMenu(BuildContext context) {
           ),
         ),
         userInfo.permission == 1
-            ? Padding(
-                padding: const EdgeInsets.only(
-                  left: 10,
-                  top: 5,
-                ),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (_) => const HomeScreen()));
-                  },
-                  child: const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Dashboard",
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFFDFFFC)),
-                    ),
-                  ),
-                ),
-              )
+            ? buildMenuItem("Dashboard", const HomeScreen(), context)
             : Container(),
         userInfo.permission == 1
-            ? Padding(
-                padding: const EdgeInsets.only(
-                  left: 10,
-                  top: 5,
-                ),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const DoctorPatientScreen()));
-                  },
-                  child: const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "My Patients",
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFFDFFFC)),
-                    ),
-                  ),
-                ),
-              )
+            ? buildMenuItem("My Patients", const DoctorPatientScreen(), context)
             : Container(),
         userInfo.permission == 2
-            ? Padding(
-                padding: const EdgeInsets.only(
-                  left: 10,
-                  top: 5,
-                ),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const AddDoctorScreen()));
-                  },
-                  child: const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Add Doctor",
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFFDFFFC)),
-                    ),
-                  ),
-                ),
-              )
+            ? buildMenuItem("Add Doctor", const AddDoctorScreen(), context)
             : Container(),
-        Padding(
-          padding: const EdgeInsets.only(
-            left: 10,
-            top: 5,
-          ),
-          child: TextButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const AddPatientScreen()));
-            },
-            child: const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Add Patient",
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFFDFFFC)),
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(
-            left: 10,
-            top: 5,
-          ),
-          child: TextButton(
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const AddAppointmentScreen()));
-            },
-            child: const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Add Appointment",
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFFDFFFC)),
-              ),
-            ),
-          ),
-        ),
+        buildMenuItem("Add Patient", const AddPatientScreen(), context),
+        buildMenuItem("Add Appointment", const AddAppointmentScreen(), context),
       ],
+    ),
+  );
+}
+
+Widget buildMenuItem(String label, Widget route, BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(10),
+    child: TextButton(
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => route));
+      },
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label,
+          style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFFDFFFC)),
+        ),
+      ),
     ),
   );
 }

@@ -30,6 +30,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         backgroundColor: const Color(0xFF011627),
         title: const Text(
           "Add Doctor",
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: Padding(
@@ -59,7 +63,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 ),
               ),
             ),
-             Container(
+            Container(
               padding: const EdgeInsets.all(10),
               child: TextField(
                 autocorrect: false,
@@ -160,207 +164,198 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 ),
               ),
             ),
-            
             Container(
               height: 50,
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF011627)),
-                child: const Text(
-                  "Add",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF011627)),
+                  child: const Text(
+                    "Add",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                onPressed: () async {
-                  showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) {
-                                dialogContext = context;
-                                return Dialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.0),
+                  onPressed: () async {
+                    showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) {
+                          dialogContext = context;
+                          return Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: SizedBox(
+                              height: 400,
+                              width: double.infinity,
+                              child: Center(
+                                // Display lottie animation
+                                child: Lottie.asset(
+                                  "assets/lottie/Loading.json",
+                                  height: 200,
+                                  width: 200,
+                                ),
+                              ),
+                            ),
+                          );
+                        });
+                    try {
+                      var response = await dio
+                          .post("$ServerIP/api/admin/RegisterDoctor", data: {
+                        "name": name.text,
+                        "password": password.text,
+                        "phone": phone.text,
+                        "specialization": specialization.text,
+                        "clinic_name": clinic_name.text,
+                        "clinic_address": clinic_addr.text,
+                      }).timeout(const Duration(seconds: 5));
+                      if (response.data["message"] ==
+                          "Registered Successfully") {
+                        showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) {
+                              dialogContext = context;
+                              return Dialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                child: SizedBox(
+                                  height: 400,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: Center(
+                                          // Display lottie animation
+                                          child: Lottie.asset(
+                                            "assets/lottie/Success.json",
+                                            height: 300,
+                                            width: 300,
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            Navigator.pop(dialogContext);
+                                          });
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const HomeScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: const Text(
+                                          "Close",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  child: SizedBox(
-                                    height: 400,
-                                    width: double.infinity,
-                                    child: Center(
-                                      // Display lottie animation
-                                      child: Lottie.asset(
-                                        "assets/lottie/Loading.json",
-                                        height: 200,
-                                        width: 200,
+                                ),
+                              );
+                            });
+                      } else {
+                        showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) {
+                              dialogContext = context;
+                              return Dialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                child: SizedBox(
+                                  height: 400,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: Center(
+                                          // Display lottie animation
+                                          child: Lottie.asset(
+                                            "assets/lottie/Error.json",
+                                            height: 300,
+                                            width: 300,
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(dialogContext);
+                                          Navigator.pop(dialogContext);
+                                        },
+                                        child: const Text(
+                                          "Close",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            });
+                      }
+                    } catch (e) {
+                      showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) {
+                            dialogContext = context;
+                            return Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              child: SizedBox(
+                                height: 400,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: Center(
+                                        // Display lottie animation
+                                        child: Lottie.asset(
+                                          "assets/lottie/Error.json",
+                                          height: 300,
+                                          width: 300,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              });
-                              try {
-
-                  var response = await dio.post("$ServerIP/api/admin/RegisterDoctor", data: {
-                    "name": name.text,
-                    "password": password.text,
-                    "phone": phone.text,
-                    "specialization": specialization.text,
-                    "clinic_name": clinic_name.text,
-                    "clinic_address": clinic_addr.text,
-                  }).timeout(const Duration(seconds: 5));
-                  if (response.data["message"] == "Registered Successfully") {
-                    showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (context) {
-                                      dialogContext = context;
-                                      return Dialog(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(dialogContext);
+                                        Navigator.pop(dialogContext);
+                                      },
+                                      child: const Text(
+                                        "Close",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
                                         ),
-                                        child: SizedBox(
-                                          height: 400,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                width: double.infinity,
-                                                child: Center(
-                                                  // Display lottie animation
-                                                  child: Lottie.asset(
-                                                    "assets/lottie/Success.json",
-                                                    height: 300,
-                                                    width: 300,
-                                                  ),
-                                                ),
-                                              ),
-                                              TextButton(
-                                                onPressed: () {
-                                                  setState(() {
-                                                    Navigator.pop(
-                                                        dialogContext);
-                                                  });
-                                                  Navigator.pushReplacement(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (_) =>
-                                                          const HomeScreen(),
-                                                    ),
-                                                  );
-                                                },
-                                                child: const Text(
-                                                  "Close",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 20,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    });
-                  } else {
-                    showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (context) {
-                                      dialogContext = context;
-                                      return Dialog(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                        ),
-                                        child: SizedBox(
-                                          height: 400,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                width: double.infinity,
-                                                child: Center(
-                                                  // Display lottie animation
-                                                  child: Lottie.asset(
-                                                    "assets/lottie/Error.json",
-                                                    height: 300,
-                                                    width: 300,
-                                                  ),
-                                                ),
-                                              ),
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(dialogContext);
-                                                  Navigator.pop(dialogContext);
-                                                },
-                                                child: const Text(
-                                                  "Close",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 20,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    });
-                  }
-                } catch (e) {
-                  showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (context) {
-                                      dialogContext = context;
-                                      return Dialog(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                        ),
-                                        child: SizedBox(
-                                          height: 400,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                width: double.infinity,
-                                                child: Center(
-                                                  // Display lottie animation
-                                                  child: Lottie.asset(
-                                                    "assets/lottie/Error.json",
-                                                    height: 300,
-                                                    width: 300,
-                                                  ),
-                                                ),
-                                              ),
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(dialogContext);
-                                                  Navigator.pop(dialogContext);
-                                                },
-                                                child: const Text(
-                                                  "Close",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 20,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    });
-                }
-                } 
-              ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          });
+                    }
+                  }),
             ),
-            
           ],
         ),
       ),

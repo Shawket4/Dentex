@@ -44,14 +44,15 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF2F5F9),
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: const Color(0xFF011627),
         title: const Text(
           "My Patients",
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),

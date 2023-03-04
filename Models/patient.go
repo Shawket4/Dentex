@@ -34,16 +34,16 @@ type Tooth struct {
 func CreatePatientTeethMap(patient Patient) TeethMap {
 	var teethMap = patient.PatientTeethMap
 	for i := 1; i <= 8; i++ {
-		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("LB%v", i), teethMap.ID, "", false})
+		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("LB%v", i), teethMap.ID, "None", false})
 	}
 	for i := 1; i <= 8; i++ {
-		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("LT%v", i), teethMap.ID, "", false})
+		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("LT%v", i), teethMap.ID, "None", false})
 	}
 	for i := 1; i <= 8; i++ {
-		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("RB%v", i), teethMap.ID, "", false})
+		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("RB%v", i), teethMap.ID, "None", false})
 	}
 	for i := 1; i <= 8; i++ {
-		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("RT%v", i), teethMap.ID, "", false})
+		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("RT%v", i), teethMap.ID, "None", false})
 	}
 	return teethMap
 }

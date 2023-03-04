@@ -192,17 +192,33 @@ func EditTeethMap(c *gin.Context) {
 		return
 	}
 	var patient Models.Patient
-	if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", input.PatientID).Find(&patient).Error; err != nil {
+	if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", input.PatientID).Preload("PatientTeethMap").Find(&patient).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	patient.PatientTeethMap = input.PatientTeethMap
-	if err := Models.DB.Model(&Models.Patient{}).Save(&patient).Error; err != nil {
+	if err := Models.DB.Model(&Models.TeethMap{}).Where("id = ?", patient.PatientTeethMap.ID).Preload("Teeth").Find(&patient.PatientTeethMap).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+	}
+
+	// patient.PatientTeethMap = input.PatientTeethMap
+	for index := range patient.PatientTeethMap.Teeth {
+		patient.PatientTeethMap.Teeth[index].Condition = input.PatientTeethMap.Teeth[index].Condition
+		patient.PatientTeethMap.Teeth[index].IsTreated = input.PatientTeethMap.Teeth[index].IsTreated
+	}
+	// var teethMap Models.TeethMap
+	var teeth []Models.Tooth
+	for _, tooth := range patient.PatientTeethMap.Teeth {
+		teeth = append(teeth, Models.Tooth{Condition: tooth.Condition, ToothCode: tooth.ToothCode, IsTreated: tooth.IsTreated})
+	}
+	fmt.Println(teeth)
+	if err := Models.DB.Model(&patient.PatientTeethMap).Association("Teeth").Replace(&teeth); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Patient Updated Successfully"})
 }
 
@@ -227,6 +243,95 @@ func GetDoctorPatients(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err)
 	}
 	c.JSON(http.StatusOK, patients)
+}
+
+func RegisterCondition(c *gin.Context) {
+	var input struct {
+		ConditionName  string  `json:"condition_name"`
+		ConditionPrice float64 `json:"condition_price"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	var condition Models.Condition
+
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+
+	condition.Name = input.ConditionName
+	condition.Price = input.ConditionPrice
+	condition.DoctorID = user.ID
+
+	if err := Models.DB.Save(&condition).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Condition Created Successfully"})
+}
+
+func EditCondition(c *gin.Context) {
+	var input struct {
+		ConditionID    uint    `json:"condition_id"`
+		ConditionName  string  `json:"condition_name"`
+		ConditionPrice float64 `json:"condition_price"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	var condition Models.Condition
+	if err := Models.DB.Model(&Models.Condition{}).Where("id = ?", input.ConditionID).Find(&condition).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	condition.Name = input.ConditionName
+	condition.Price = input.ConditionPrice
+	if err := Models.DB.Model(&Models.Condition{}).Save(&condition).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Condition Updated Successfully"})
+}
+
+func GetDoctorConditions(c *gin.Context) {
+	var conditions []Models.Condition
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	if err := Models.DB.Model(&Models.Condition{}).Where("doctor_id = ?", user.ID).Find(&conditions).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+	}
+	c.JSON(http.StatusOK, conditions)
 }
 
 func GetPatientTeethMap(c *gin.Context) {

@@ -174,8 +174,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: const Text(
                   "Dashboard",
                   style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -189,23 +189,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: <Widget>[
-                      Row(
-                        children: [
-                          const Text(
-                            "Good Morning, ",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 20,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Good Morning, ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 20,
+                              ),
                             ),
-                          ),
-                          Text(
-                            "Dr ${userInfo.username.split(' ')[0]}.",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 20,
-                            ),
-                          )
-                        ],
+                            Text(
+                              "Dr ${userInfo.username.split(' ')[0]}.",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 20,
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                       const SizedBox(
                         height: 10,

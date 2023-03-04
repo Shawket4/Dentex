@@ -26,8 +26,8 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
         title: Text(
           "${widget.appointment.treatment} Appointment",
           style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),

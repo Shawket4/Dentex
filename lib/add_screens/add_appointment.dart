@@ -72,7 +72,11 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         centerTitle: true,
         backgroundColor: const Color(0xFF011627),
         title: const Text(
-          "Add Patient",
+          "Add Appointment",
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: Padding(
@@ -229,7 +233,8 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               child: TextField(
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 autocorrect: false,
                 controller: price,
                 decoration: const InputDecoration(

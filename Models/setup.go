@@ -42,4 +42,5 @@ func ConnectDataBase() {
 	DB.AutoMigrate(&TeethMap{})
 	DB.AutoMigrate(&Patient{})
 	DB.AutoMigrate(&Appointment{})
+	DB.AutoMigrate(&Condition{})
 }
