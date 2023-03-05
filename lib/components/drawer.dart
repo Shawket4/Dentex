@@ -2,6 +2,7 @@
 
 import 'package:clinic_management/add_screens/add_appointment.dart';
 import 'package:clinic_management/add_screens/add_patient.dart';
+import 'package:clinic_management/add_screens/add_treatment.dart';
 import 'package:clinic_management/main.dart';
 import 'package:clinic_management/add_screens/add_doctor_screen.dart';
 import 'package:clinic_management/screens/doctor_patients.dart';
@@ -50,8 +51,17 @@ Widget SideMenu(BuildContext context) {
         userInfo.permission == 2
             ? buildMenuItem("Add Doctor", const AddDoctorScreen(), context)
             : Container(),
-        buildMenuItem("Add Patient", const AddPatientScreen(), context),
-        buildMenuItem("Add Appointment", const AddAppointmentScreen(), context),
+        userInfo.permission == 1
+            ? buildMenuItem("Add Patient", const AddPatientScreen(), context)
+            : Container(),
+        userInfo.permission == 1
+            ? buildMenuItem(
+                "Add Appointment", const AddAppointmentScreen(), context)
+            : Container(),
+        userInfo.permission == 1
+            ? buildMenuItem(
+                "Add Treatment", const AddTreatmentScreen(), context)
+            : Container(),
       ],
     ),
   );

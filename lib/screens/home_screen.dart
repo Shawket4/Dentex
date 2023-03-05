@@ -39,17 +39,29 @@ class _HomeScreenState extends State<HomeScreen> {
       userInfo.username = userName;
       userInfo.permission = permission;
       DateTime currentDate = DateTime.now();
-      response = await getData("$ServerIP/api/protected/GetDoctorAppointments");
-      for (var obj in response) {
+      response = await getData("$ServerIP/api/protected/GetDoctorSchedule");
+      if (userInfo.permission == 2) {
+        return userInfo;
+      }
+      // print(response);
+      for (var obj in response["schedule"]["time_blocks"]) {
+        obj = obj["appointment"];
+
         Appointment appointment = Appointment();
         appointment.id = obj["ID"];
-        appointment.date = DateTime.parse(obj["date"]);
+        appointment.date =
+            intl.DateFormat("yyyy/MM/dd & h:mm a").parse(obj["date"]);
+
+        appointment.patientID = obj["patient_id"];
+        appointment.toothID = obj["tooth_id"];
         appointment.patientName = obj["patient_name"];
+        appointment.toothCode = obj["tooth_code"];
         appointment.treatment = obj["treatment"];
         appointment.price = double.parse(obj["price"].toString());
         appointment.isPaid = obj["is_paid"];
         appointment.isCompleted = obj["is_completed"];
         allAppointments.add(appointment);
+
         if (appointment.date!.year == currentDate.year &&
             appointment.date!.month == currentDate.month) {
           currentMonthAppointments.add(appointment);
@@ -123,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
       }
+
       isUserLoaded = true;
       setState(() {});
     }
@@ -238,21 +251,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                   height: 10,
                                 ),
                                 Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        appointmentWidgetsToday.length
-                                            .toString(),
-                                        style: const TextStyle(
-                                          fontSize: 64,
-                                          fontFamily: "Iowan Old",
-                                          fontWeight: FontWeight.w900,
-                                          color: Color(0xFF696969),
-                                        ),
+                                    Text(
+                                      appointmentWidgetsToday.length.toString(),
+                                      style: const TextStyle(
+                                        fontSize: 64,
+                                        fontFamily: "Iowan Old",
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF696969),
                                       ),
+                                    ),
+                                    const SizedBox(
+                                      width: 40,
                                     ),
                                     SizedBox(
                                       height: 180,

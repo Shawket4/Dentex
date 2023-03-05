@@ -5,7 +5,6 @@ import 'package:clinic_management/screens/home_screen.dart';
 import 'package:clinic_management/screens/login_page.dart';
 import 'package:dio/dio.dart';
 import 'package:material_color_generator/material_color_generator.dart';
-// import 'package:material_color_generator/material_color_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
 
@@ -44,7 +43,7 @@ Future<bool> get Logout async {
   return await prefs.remove("jwt");
 }
 
-const String ServerIP = "http://localhost:5505";
+const String ServerIP = "http://144.126.104.226:5505";
 
 class Router extends StatefulWidget {
   const Router({Key? key}) : super(key: key);
@@ -97,22 +96,3 @@ class _RouterState extends State<Router> {
     );
   }
 }
-
-// class MyApp extends StatefulWidget {
-//   const MyApp({super.key});
-//
-//   @override
-//   State<MyApp> createState() => _MyAppState();
-// }
-//
-// class _MyAppState extends State<MyApp> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return const MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       title: 'Quick Quiz',
-//       home: LoginPage(),
-//     );
-//   }
-// }
-

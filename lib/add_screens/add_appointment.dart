@@ -349,7 +349,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
                         });
                     try {
                       var response = await dio.post(
-                          "$ServerIP/api/protected/RegisterAppointment",
+                          "`$ServerIP/api/protected/RegisterAppointment`",
                           data: {
                             "date": dateTime.text,
                             "doctor_id": selectedDoctor.id,

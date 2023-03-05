@@ -4,6 +4,7 @@ import 'package:clinic_management/dio_helper.dart';
 import 'package:clinic_management/main.dart';
 import 'package:clinic_management/models/appointment.dart';
 import 'package:clinic_management/screens/home_screen.dart';
+import 'package:clinic_management/screens/patient_details.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -56,10 +57,37 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                 ),
               ),
             ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PatientDetailScreen(
+                      patientID: widget.appointment.patientID!,
+                    ),
+                  ),
+                );
+              },
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Text(
+                      "Patient: ${widget.appointment.patientName}",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_circle_right_rounded),
+                ],
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text(
-                "Patient: ${widget.appointment.patientName}",
+                "Case: ${widget.appointment.treatment}",
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
@@ -69,7 +97,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text(
-                "Case: ${widget.appointment.treatment}",
+                "Tooth: ${widget.appointment.toothCode}",
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,

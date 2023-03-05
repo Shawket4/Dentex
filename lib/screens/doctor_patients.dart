@@ -27,6 +27,7 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
       for (var obj in response) {
         Patient patient = Patient();
         patient.id = obj["ID"];
+        patient.doctorID = obj["doctor_id"];
         patient.name = obj["name"];
         patient.address = obj["address"];
         patient.phone = obj["phone"];
@@ -77,7 +78,7 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (_) => PatientDetailScreen(
-                                patient: doctorPatients[index])));
+                                patientID: doctorPatients[index].id)));
                   },
                   child: ListTile(
                     title: Text(doctorPatients[index].name),

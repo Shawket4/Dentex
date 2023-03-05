@@ -3,13 +3,15 @@
 import 'package:clinic_management/dio_helper.dart';
 import 'package:clinic_management/main.dart';
 import 'package:clinic_management/models/patient.dart';
+import 'package:clinic_management/models/treatment.dart';
+import 'package:clinic_management/screens/make_appointment.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 class PatientDetailScreen extends StatefulWidget {
-  const PatientDetailScreen({super.key, required this.patient});
-  final Patient patient;
+  const PatientDetailScreen({super.key, required this.patientID});
+  final int patientID;
   @override
   State<PatientDetailScreen> createState() => _PatientDetailScreenState();
 }
@@ -18,8 +20,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   TeethMap teethMap = TeethMap();
   List<Widget> teethTop = [];
   List<Widget> teethBottom = [];
-  List<String> conditions = ["None", "Carries", "Open Access"];
-
+  List<Treatment> treatments = [];
+  Patient patient = Patient();
   bool isMapLoaded = false;
   @override
   void initState() {
@@ -49,7 +51,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                 Text(
                   tooth.toothCode,
                   style: TextStyle(
-                    color: tooth.condition == "None" ? null : Colors.red,
+                    color: tooth.condition.name == "None" ? null : Colors.red,
                   ),
                 ),
               ],
@@ -75,7 +77,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                 Text(
                   tooth.toothCode,
                   style: TextStyle(
-                    color: tooth.condition == "None" ? null : Colors.red,
+                    color: tooth.condition.name == "None" ? null : Colors.red,
                   ),
                 ),
               ],
@@ -87,18 +89,39 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     setState(() {});
   }
 
-  Future<String> loadTeethMap() async {
+  Future<String> loadPatientData() async {
     if (!isMapLoaded) {
+      treatments.add(Treatment(name: "None", price: 0.0));
+      var treatmentsResponse =
+          await getData("$ServerIP/api/protected/GetDoctorTreatments");
+      for (var obj in treatmentsResponse) {
+        Treatment treatment = Treatment();
+        treatment.name = obj["name"];
+        treatment.price = double.parse(obj["price"].toString());
+        treatments.add(treatment);
+      }
+
+      var userResponse =
+          await postData("$ServerIP/api/protected/GetPatientDetails", {
+        "patient_id": widget.patientID,
+      });
+      patient.id = userResponse["ID"];
+      patient.doctorID = userResponse["doctor_id"];
+      patient.name = userResponse["name"];
+      patient.address = userResponse["address"];
+      patient.phone = userResponse["phone"];
+      patient.gender = userResponse["gender"];
+      patient.age = userResponse["age"];
       var response =
           await postData("$ServerIP/api/protected/GetPatientTeethMap", {
-        "patient_id": widget.patient.id,
+        "patient_id": widget.patientID,
       });
 
       for (var obj in response["teeth"]) {
         Tooth tooth = Tooth();
         tooth.id = obj["ID"];
         tooth.toothCode = obj["tooth_code"];
-        tooth.condition = obj["condition"];
+        tooth.condition.name = obj["condition"];
         tooth.isTreated = obj["is_treated"];
         teethMap.teeth.add(tooth);
         if (tooth.toothCode[1] == "B") {
@@ -110,16 +133,17 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               child: Column(
                 children: [
                   SizedBox(
-                      height: 30,
-                      width: 30,
-                      child: Image.asset("assets/images/teeth/LB1_Bottom.png")),
+                    height: 30,
+                    width: 30,
+                    child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                  ),
                   const SizedBox(
                     height: 10,
                   ),
                   Text(
                     tooth.toothCode,
                     style: TextStyle(
-                      color: tooth.condition == "None" ? null : Colors.red,
+                      color: tooth.condition.name == "None" ? null : Colors.red,
                     ),
                   ),
                 ],
@@ -145,7 +169,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                   Text(
                     tooth.toothCode,
                     style: TextStyle(
-                      color: tooth.condition == "None" ? null : Colors.red,
+                      color: tooth.condition.name == "None" ? null : Colors.red,
                     ),
                   ),
                 ],
@@ -168,7 +192,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         centerTitle: true,
         backgroundColor: const Color(0xFF011627),
         title: Text(
-          "Patient: ${widget.patient.name.split(" ").first}",
+          "Patient: ${patient.name.split(" ").first}",
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600,
@@ -176,7 +200,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         ),
       ),
       body: FutureBuilder(
-        future: loadTeethMap(),
+        future: loadPatientData(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -197,22 +221,26 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                   const SizedBox(
                     height: 30,
                   ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: teethTop,
+                  Center(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: teethTop,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 50),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: teethBottom,
+                  Center(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: teethBottom,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 60),
                   Text(
-                    "Patient: ${widget.patient.name}",
+                    "Patient: ${patient.name}",
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
@@ -220,7 +248,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                   ),
                   const SizedBox(height: 40),
                   Text(
-                    "Address: ${widget.patient.address}",
+                    "Address: ${patient.address}",
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
@@ -228,7 +256,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                   ),
                   const SizedBox(height: 40),
                   Text(
-                    "Phone: ${widget.patient.phone}",
+                    "Phone: ${patient.phone}",
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
@@ -236,7 +264,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                   ),
                   const SizedBox(height: 40),
                   Text(
-                    "Age: ${widget.patient.age}",
+                    "Age: ${patient.age}",
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
@@ -244,7 +272,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                   ),
                   const SizedBox(height: 40),
                   Text(
-                    "Gender: ${widget.patient.gender}",
+                    "Gender: ${patient.gender}",
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
@@ -255,16 +283,19 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     child: TextButton(
                       onPressed: () async {
                         await postData("$ServerIP/api/protected/EditTeethMap", {
-                          "patient_id": widget.patient.id,
+                          "patient_id": patient.id,
                           "patient_teeth_map": {
                             "teeth": teethMap.toJSON(),
                           },
                         });
                         Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => PatientDetailScreen(
-                                    patient: widget.patient)));
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PatientDetailScreen(
+                              patientID: widget.patientID,
+                            ),
+                          ),
+                        );
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -377,13 +408,40 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     showSelectedItems: true,
                     showSearchBox: false,
                     enabled: true,
-                    items: conditions,
-                    selectedItem: tooth.condition,
+                    items: treatments.map((e) => e.name.toString()).toList(),
+                    selectedItem: tooth.condition.name,
                     onChanged: (item) => setState(() {
-                      tooth.condition = item!;
+                      tooth.condition.name = item!;
                     }),
                   ),
                 ),
+                // const SizedBox(
+                //   height: 20.0,
+                // ),
+                tooth.condition.name != "None"
+                    ? TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MakeAppointmentScreen(
+                                tooth: tooth,
+                                patient: patient,
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Make Appointment",
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontSize: 18,
+                            fontFamily: "Calibri",
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      )
+                    : Container(),
                 const Spacer(),
                 TextButton(
                   onPressed: () {

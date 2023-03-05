@@ -1,5 +1,6 @@
 class Patient {
   int id = 0;
+  int doctorID = 0;
   String name = "";
   String address = "";
   String phone = "";
@@ -7,15 +8,20 @@ class Patient {
   int age = 0;
 }
 
+class Condition {
+  String name = "None";
+  double price = 0.0;
+}
+
 class Tooth {
   int id = 0;
   String toothCode = "";
-  String condition = "None";
+  Condition condition = Condition();
   bool isTreated = false;
   Map<String, dynamic> toJSON() => {
         "id": id,
         "tooth_code": toothCode,
-        "condition": condition,
+        "condition": condition.name,
         "is_treated": isTreated,
       };
 }

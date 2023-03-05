@@ -42,5 +42,9 @@ func ConnectDataBase() {
 	DB.AutoMigrate(&TeethMap{})
 	DB.AutoMigrate(&Patient{})
 	DB.AutoMigrate(&Appointment{})
-	DB.AutoMigrate(&Condition{})
+	DB.AutoMigrate(&Treatment{})
+	DB.AutoMigrate(&Schedule{})
+	DB.AutoMigrate(&TimeBlock{})
+	// DB.AutoMigrate(&DoctorWorkingHour{})
+	DB.Session(&gorm.Session{FullSaveAssociations: true})
 }
