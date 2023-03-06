@@ -1,13 +1,15 @@
+import 'package:clinic_management/components/app_bar.dart';
 import 'package:clinic_management/dio_helper.dart';
 import 'package:clinic_management/main.dart';
 import 'package:clinic_management/models/patient.dart';
+import 'package:clinic_management/screens/login_page.dart';
 import 'package:clinic_management/screens/patient_details.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 class DoctorPatientScreen extends StatefulWidget {
-  const DoctorPatientScreen({super.key});
-
+  const DoctorPatientScreen({super.key, required this.openDrawer});
+  final Function openDrawer;
   @override
   State<DoctorPatientScreen> createState() => _DoctorPatientScreenState();
 }
@@ -17,6 +19,7 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
   bool isLoaded = false;
   @override
   void initState() {
+    doctorPatients.clear();
     isLoaded = false;
     super.initState();
   }
@@ -46,15 +49,32 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F9),
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: const Color(0xFF011627),
-        title: const Text(
-          "My Patients",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
+      appBar: CustomAppBar(
+        title: "My Patients",
+        actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+              onPressed: () async {
+                final bool response = await Logout;
+                if (response) {
+                  // ignore: use_build_context_synchronously
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (_) => const LoginPage()));
+                }
+              },
+              icon: const Icon(
+                Icons.logout_rounded,
+                size: 30,
+              ),
+            ),
           ),
+        ],
+        leading: IconButton(
+          onPressed: () {
+            widget.openDrawer();
+          },
+          icon: const Icon(Icons.menu),
         ),
       ),
       body: FutureBuilder(

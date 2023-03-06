@@ -1,4 +1,5 @@
-// ignore_for_file: unused_local_variable, non_constant_identifier_names, constant_identifier_names
+// ignore_for_file: unused_local_variable, non_constant_identifier_names, constant_identifier_names, unused_import
+import 'package:clinic_management/components/bottom_nav_bar.dart';
 import 'package:clinic_management/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:clinic_management/screens/home_screen.dart';
@@ -43,7 +44,7 @@ Future<bool> get Logout async {
   return await prefs.remove("jwt");
 }
 
-const String ServerIP = "http://144.126.104.226:5505";
+const String ServerIP = "http://localhost:5505";
 
 class Router extends StatefulWidget {
   const Router({Key? key}) : super(key: key);

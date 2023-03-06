@@ -33,7 +33,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     teethBottom = [];
     teethTop = [];
     for (var tooth in teethMap.teeth) {
-      if (tooth.toothCode[1] == "B") {
+      if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "L") {
         teethBottom.add(
           GestureDetector(
             onTap: () {
@@ -42,14 +42,15 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             child: Column(
               children: [
                 SizedBox(
-                    height: 30,
-                    width: 30,
-                    child: Image.asset("assets/images/teeth/LB1_Bottom.png")),
+                  height: MediaQuery.of(context).size.width / 18,
+                  width: MediaQuery.of(context).size.width / 18,
+                  child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                ),
                 const SizedBox(
                   height: 10,
                 ),
                 Text(
-                  tooth.toothCode,
+                  "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
                   style: TextStyle(
                     color: tooth.condition.name == "None" ? null : Colors.red,
                   ),
@@ -59,7 +60,34 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           ),
         );
       }
-      if (tooth.toothCode[1] == "T") {
+      if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "R") {
+        teethBottom.add(
+          GestureDetector(
+            onTap: () {
+              showTeethDialog(tooth);
+            },
+            child: Column(
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.width / 18,
+                  width: MediaQuery.of(context).size.width / 18,
+                  child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  "${int.parse(tooth.toothCode[2])}",
+                  style: TextStyle(
+                    color: tooth.condition.name == "None" ? null : Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "L") {
         teethTop.add(
           GestureDetector(
             onTap: () {
@@ -68,14 +96,42 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             child: Column(
               children: [
                 SizedBox(
-                    height: 30,
-                    width: 30,
-                    child: Image.asset("assets/images/teeth/LB1_Top.png")),
+                  height: MediaQuery.of(context).size.width / 18,
+                  width: MediaQuery.of(context).size.width / 18,
+                  child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                ),
                 const SizedBox(
                   height: 10,
                 ),
                 Text(
-                  tooth.toothCode,
+                  "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
+                  style: TextStyle(
+                    color: tooth.condition.name == "None" ? null : Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
+        teethTop.add(
+          GestureDetector(
+            onTap: () {
+              showTeethDialog(tooth);
+            },
+            child: Column(
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.width / 18,
+                  width: MediaQuery.of(context).size.width / 18,
+                  child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  "${int.parse(tooth.toothCode[2])}",
                   style: TextStyle(
                     color: tooth.condition.name == "None" ? null : Colors.red,
                   ),
@@ -124,7 +180,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         tooth.condition.name = obj["condition"];
         tooth.isTreated = obj["is_treated"];
         teethMap.teeth.add(tooth);
-        if (tooth.toothCode[1] == "B") {
+        if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "L") {
           teethBottom.add(
             GestureDetector(
               onTap: () {
@@ -133,15 +189,15 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               child: Column(
                 children: [
                   SizedBox(
-                    height: 30,
-                    width: 30,
+                    height: MediaQuery.of(context).size.width / 18,
+                    width: MediaQuery.of(context).size.width / 18,
                     child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
                   ),
                   const SizedBox(
                     height: 10,
                   ),
                   Text(
-                    tooth.toothCode,
+                    "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
                     style: TextStyle(
                       color: tooth.condition.name == "None" ? null : Colors.red,
                     ),
@@ -151,7 +207,34 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             ),
           );
         }
-        if (tooth.toothCode[1] == "T") {
+        if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "R") {
+          teethBottom.add(
+            GestureDetector(
+              onTap: () {
+                showTeethDialog(tooth);
+              },
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.width / 18,
+                    width: MediaQuery.of(context).size.width / 18,
+                    child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    "${int.parse(tooth.toothCode[2])}",
+                    style: TextStyle(
+                      color: tooth.condition.name == "None" ? null : Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "L") {
           teethTop.add(
             GestureDetector(
               onTap: () {
@@ -160,14 +243,42 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               child: Column(
                 children: [
                   SizedBox(
-                      height: 30,
-                      width: 30,
-                      child: Image.asset("assets/images/teeth/LB1_Top.png")),
+                    height: MediaQuery.of(context).size.width / 18,
+                    width: MediaQuery.of(context).size.width / 18,
+                    child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                  ),
                   const SizedBox(
                     height: 10,
                   ),
                   Text(
-                    tooth.toothCode,
+                    "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
+                    style: TextStyle(
+                      color: tooth.condition.name == "None" ? null : Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
+          teethTop.add(
+            GestureDetector(
+              onTap: () {
+                showTeethDialog(tooth);
+              },
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.width / 18,
+                    width: MediaQuery.of(context).size.width / 18,
+                    child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    "${int.parse(tooth.toothCode[2])}",
                     style: TextStyle(
                       color: tooth.condition.name == "None" ? null : Colors.red,
                     ),

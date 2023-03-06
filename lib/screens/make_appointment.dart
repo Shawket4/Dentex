@@ -313,40 +313,41 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                                 childAspectRatio: 2,
                                 mainAxisSpacing: 10,
                               ),
-                              itemBuilder: (context, index) => GestureDetector(
-                                onTap: () {
-                                  timeBlocks[index].isAvailable!
-                                      ? {
-                                          setState(() {
-                                            selectedTimeBlock =
-                                                timeBlocks[index];
-                                          })
-                                        }
-                                      : {};
-                                },
-                                child: SizedBox(
-                                  height: 50,
-                                  child: Card(
-                                    color: timeBlocks[index].isAvailable!
-                                        ? selectedTimeBlock!.dateTime! ==
-                                                timeBlocks[index].dateTime
-                                            ? Colors.blue
-                                            : const Color(0xFFFEFEFE)
-                                        : Colors.grey,
-                                    elevation: 2,
-                                    child: Center(
-                                      child: Text(
-                                        intl.DateFormat("h:mm a").format(
-                                            timeBlocks[index].dateTime!),
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: selectedTimeBlock!.dateTime! ==
-                                                  timeBlocks[index].dateTime
-                                              ? Colors.white
-                                              : timeBlocks[index].isAvailable!
-                                                  ? null
-                                                  : Colors.white,
-                                          fontWeight: FontWeight.w600,
+                              itemBuilder: (context, index) => Opacity(
+                                opacity:
+                                    timeBlocks[index].isAvailable! ? 1 : 0.6,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    timeBlocks[index].isAvailable!
+                                        ? {
+                                            setState(() {
+                                              selectedTimeBlock =
+                                                  timeBlocks[index];
+                                            })
+                                          }
+                                        : {};
+                                  },
+                                  child: SizedBox(
+                                    height: 50,
+                                    child: Card(
+                                      color: selectedTimeBlock!.dateTime! ==
+                                              timeBlocks[index].dateTime
+                                          ? Theme.of(context).primaryColor
+                                          : const Color(0xFFFEFEFE),
+                                      elevation: 2,
+                                      child: Center(
+                                        child: Text(
+                                          intl.DateFormat("h:mm a").format(
+                                              timeBlocks[index].dateTime!),
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: selectedTimeBlock!
+                                                        .dateTime! ==
+                                                    timeBlocks[index].dateTime
+                                                ? Colors.white
+                                                : null,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ),
                                     ),

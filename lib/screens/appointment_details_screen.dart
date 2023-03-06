@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, prefer_const_constructors
 
 import 'package:clinic_management/dio_helper.dart';
 import 'package:clinic_management/main.dart';
@@ -176,8 +176,8 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                     {
                       "appointment_id": widget.appointment.id,
                       "completion_status": !widget.appointment.isCompleted!,
-                    }).then((value) => Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (_) => const HomeScreen())));
+                    }).then((value) => Navigator.pushReplacement(
+                    context, MaterialPageRoute(builder: (_) => HomeScreen())));
               },
               child: Container(
                 decoration: BoxDecoration(

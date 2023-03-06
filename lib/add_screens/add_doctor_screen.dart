@@ -48,6 +48,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               child: TextField(
                 autocorrect: false,
                 controller: name,
+                keyboardType: TextInputType.name,
                 decoration: const InputDecoration(
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(
@@ -89,6 +90,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               child: TextField(
                 autocorrect: false,
                 controller: phone,
+                keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(

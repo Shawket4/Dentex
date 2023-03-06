@@ -389,6 +389,55 @@ func GetDoctorSchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, doctor)
 }
 
+func Search(c *gin.Context) {
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	var doctorID uint
+	if err := Models.DB.Model(&Models.Doctor{}).Select("id").Where("user_id = ?", user.ID).Find(&doctorID).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	var input struct {
+		Query string `json:"query"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	var allPatients []Models.Patient
+	// db.Where(
+	// 	db.Where("pizza = ?", "pepperoni").Where(db.Where("size = ?", "small").Or("size = ?", "medium")),
+	//   ).Or(
+	// 	db.Where("pizza = ?", "hawaiian").Where("size = ?", "xlarge"),
+	//   ).Find(&Pizza{}).Statement
+	if err := Models.DB.Model(&Models.Patient{}).Where("name LIKE ?", "%"+input.Query+"%").Or("address LIKE ?", "%"+input.Query+"%").Or("phone LIKE ?", "%"+input.Query+"%").Find(&allPatients).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	var patients []Models.Patient = []Models.Patient{}
+	for _, patient := range allPatients {
+		if patient.DoctorID == doctorID {
+			patients = append(patients, patient)
+		}
+	}
+	c.JSON(http.StatusOK, patients)
+}
+
 func RegisterTreatment(c *gin.Context) {
 	var input struct {
 		TreatmentName  string  `json:"treatment_name"`
