@@ -40,8 +40,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (userInfo.permission == 2) {
         return userInfo;
       }
-      // print(response);
-
       for (var obj in response["schedule"]["time_blocks"]) {
         obj = obj["appointment"];
 
@@ -49,7 +47,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         appointment.id = obj["ID"];
         appointment.date =
             intl.DateFormat("yyyy/MM/dd & h:mm a").parse(obj["date"]);
-
         appointment.patientID = obj["patient_id"];
         appointment.toothID = obj["tooth_id"];
         appointment.patientName = obj["patient_name"];

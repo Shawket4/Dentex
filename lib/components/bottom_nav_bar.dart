@@ -1,8 +1,9 @@
 // ignore_for_file: unused_local_variable, non_constant_identifier_names
-
+import 'package:clinic_management/components/drawer.dart';
 import 'package:clinic_management/components/rive_controller.dart';
 import 'package:clinic_management/screens/dashboard_screen.dart';
 import 'package:clinic_management/screens/doctor_patients.dart';
+import 'package:clinic_management/screens/favourites_screen.dart';
 import 'package:clinic_management/screens/home_screen.dart';
 import 'package:clinic_management/screens/search_screen.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.symmetric(horizontal: 24),
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8.0),
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
           borderRadius: BorderRadius.circular(24),
@@ -37,10 +38,9 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
               (index) => GestureDetector(
                 onTap: () {
                   widget.update();
-                  setState(() {
-                    selectedIndex = index;
-                    selectedBottomItem = bottomItems[index];
-                  });
+                  selectedIndex = index;
+                  selectedBottomItem = bottomItems[index];
+                  selectedSideItem = sideItems[index];
                   bottomItems[index].input!.change(true);
                   Future.delayed(const Duration(milliseconds: 600), () {
                     bottomItems[index].input!.change(false);
@@ -57,7 +57,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                         opacity:
                             selectedBottomItem == bottomItems[index] ? 1 : 0.5,
                         child: RiveAnimation.asset(
-                          "assets/rive/icons.riv",
+                          bottomItems[index].file,
                           artboard: bottomItems[index].artboard,
                           onInit: (artboard) {
                             StateMachineController controller =
@@ -65,8 +65,8 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                               artboard,
                               bottomItems[index].stateMachineName,
                             );
-                            bottomItems[index].input =
-                                controller.findSMI("active") as SMIBool;
+                            bottomItems[index].input = controller
+                                .findSMI(bottomItems[index].smi) as SMIBool;
                           },
                         ),
                       ),
@@ -84,22 +84,6 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
 
 // Widget CustomNavigationBar(BuildContext context) {}
 
-class RiveAsset {
-  final String artboard, stateMachineName, title;
-  final Widget route;
-  late SMIBool? input;
-  RiveAsset({
-    required this.artboard,
-    required this.stateMachineName,
-    required this.title,
-    required this.route,
-    this.input,
-  });
-  set setInput(SMIBool status) {
-    input = status;
-  }
-}
-
 Widget loadScreen(Function openDrawer) {
   switch (selectedIndex) {
     case 0:
@@ -114,31 +98,61 @@ Widget loadScreen(Function openDrawer) {
       return DoctorPatientScreen(
         openDrawer: openDrawer,
       );
+    case 3:
+      return FavouriteScreen(
+        openDrawer: openDrawer,
+      );
+    // case 3:
+    //   return Placeholder();
+    // case 4:
+    //   return Placeholder();
+    // case 5:
+    //   return Placeholder();
+    // case 6:
+    //   return Placeholder();
   }
-  return const HomeScreen();
+  return DashboardScreen(
+    openDrawer: openDrawer,
+  );
 }
 
 void loadBottomItems(Function openDrawer) {
   bottomItems = [
     RiveAsset(
+      file: "assets/rive/icons.riv",
       artboard: "HOME",
       stateMachineName: "HOME_interactivity",
+      smi: "active",
       title: "Dashboard",
       route: const HomeScreen(),
     ),
     RiveAsset(
+      file: "assets/rive/icons.riv",
       artboard: "SEARCH",
       stateMachineName: "SEARCH_Interactivity",
       title: "Search",
+      smi: "active",
       route: SearchScreen(
         openDrawer: openDrawer,
       ),
     ),
     RiveAsset(
+      file: "assets/rive/icons.riv",
       artboard: "USER",
       stateMachineName: "USER_Interactivity",
       title: "My Patients",
+      smi: "active",
       route: DoctorPatientScreen(
+        openDrawer: openDrawer,
+      ),
+    ),
+    RiveAsset(
+      file: "assets/rive/icons.riv",
+      artboard: "LIKE/STAR",
+      stateMachineName: "STAR_Interactivity",
+      title: "Favourites",
+      smi: "active",
+      route: FavouriteScreen(
         openDrawer: openDrawer,
       ),
     ),

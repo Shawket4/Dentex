@@ -3,7 +3,9 @@ import 'package:clinic_management/dio_helper.dart';
 import 'package:clinic_management/main.dart';
 import 'package:clinic_management/models/patient.dart';
 import 'package:clinic_management/screens/login_page.dart';
+import 'package:clinic_management/screens/patient_details.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key, required this.openDrawer});
@@ -22,6 +24,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   List<Patient> foundPatients = [];
+  bool isSearching = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,70 +63,129 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: const EdgeInsets.all(10),
               child: TextField(
                 autocorrect: false,
+                onSubmitted: (value) {
+                  searchCallback();
+                },
                 controller: searchController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search_rounded),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
                       color: Color(0xFF011627),
                       width: 2.0,
                     ),
                   ),
-                  border: OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      searchController.clear();
+                    },
+                    icon: const Icon(Icons.clear_rounded),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   labelText: "Search",
                   hintText: "Search Patients",
-                  hintStyle: TextStyle(
+                  hintStyle: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w300,
                   ),
-                  labelStyle: TextStyle(
+                  labelStyle: const TextStyle(
                     color: Color(0xFF011627),
                   ),
                 ),
               ),
             ),
-            SingleChildScrollView(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ...List.generate(
-                      foundPatients.length,
-                      (index) => ListTile(
-                        title: Text(
-                          foundPatients[index].name,
-                        ),
+            isSearching
+                ? Align(
+                    alignment: Alignment.center,
+                    child: Lottie.asset(
+                      "assets/lottie/Searching.json",
+                      height: 350,
+                      width: 350,
+                    ),
+                  )
+                : SingleChildScrollView(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ...List.generate(
+                            foundPatients.length,
+                            (index) => Card(
+                              elevation: 8.0,
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 4.0),
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => PatientDetailScreen(
+                                              patientID:
+                                                  foundPatients[index].id)));
+                                },
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0,
+                                    vertical: 5.0,
+                                  ),
+                                  title: Text(
+                                    foundPatients[index].name,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    foundPatients[index].gender,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  trailing: Icon(
+                                    Icons.keyboard_arrow_right_rounded,
+                                    color: Theme.of(context).primaryColor,
+                                    size: 40.0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                var response =
-                    await postData("$ServerIP/api/protected/Search", {
-                  "query": searchController.text,
-                });
-                foundPatients.clear();
-                for (var obj in response) {
-                  Patient patient = Patient();
-                  patient.id = obj["ID"];
-                  patient.doctorID = obj["doctor_id"];
-                  patient.name = obj["name"];
-                  patient.address = obj["address"];
-                  patient.phone = obj["phone"];
-                  patient.gender = obj["gender"];
-                  patient.age = obj["age"];
-                  foundPatients.add(patient);
-                }
-                setState(() {});
-              },
-              child: const Text("Search"),
-            )
+                    ),
+                  ),
           ],
         ),
       ),
     );
+  }
+
+  void searchCallback() async {
+    setState(() {
+      isSearching = true;
+    });
+    var response = await postData("$ServerIP/api/protected/Search", {
+      "query": searchController.text,
+    });
+    foundPatients.clear();
+    for (var obj in response) {
+      Patient patient = Patient();
+      patient.id = obj["ID"];
+      patient.doctorID = obj["doctor_id"];
+      patient.name = obj["name"];
+      patient.address = obj["address"];
+      patient.phone = obj["phone"];
+      patient.gender = obj["gender"];
+      patient.age = obj["age"];
+      foundPatients.add(patient);
+    }
+    setState(() {
+      isSearching = false;
+    });
   }
 }

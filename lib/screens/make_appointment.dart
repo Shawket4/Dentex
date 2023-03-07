@@ -33,10 +33,13 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
         dateTime: DateTime(
             currentDate.year, currentDate.month, currentDate.day, 24, 0),
         isAvailable: true));
-    timeBlocks.add(TimeBlock(
+    timeBlocks.add(
+      TimeBlock(
         dateTime: DateTime(
             currentDate.year, currentDate.month, currentDate.day, 0, 30),
-        isAvailable: true));
+        isAvailable: true,
+      ),
+    );
     timeBlocks.add(TimeBlock(
         dateTime: DateTime(
             currentDate.year, currentDate.month, currentDate.day, 1, 0),
@@ -405,11 +408,12 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                           });
                       try {
                         DateTime? finalDateTime = DateTime(
-                            selectedDate.year,
-                            selectedDate.month,
-                            selectedDate.day,
-                            selectedTimeBlock!.dateTime!.hour,
-                            selectedTimeBlock!.dateTime!.minute);
+                          selectedDate.year,
+                          selectedDate.month,
+                          selectedDate.day,
+                          selectedTimeBlock!.dateTime!.hour,
+                          selectedTimeBlock!.dateTime!.minute,
+                        );
                         var response = await postData(
                             "$ServerIP/api/protected/RegisterAppointment", {
                           "date": intl.DateFormat("yyyy/MM/dd & h:mm a")

@@ -1,13 +1,17 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:clinic_management/components/app_bar.dart';
+import 'package:clinic_management/components/bottom_nav_bar.dart';
+import 'package:clinic_management/components/rive_controller.dart';
 import 'package:clinic_management/dio_helper.dart';
 import 'package:clinic_management/main.dart';
 import 'package:clinic_management/models/patient.dart';
-import 'package:clinic_management/models/treatment.dart';
 import 'package:clinic_management/screens/make_appointment.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'dart:math' as math;
+import 'package:rive/rive.dart';
 
 class PatientDetailScreen extends StatefulWidget {
   const PatientDetailScreen({super.key, required this.patientID});
@@ -20,9 +24,18 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   TeethMap teethMap = TeethMap();
   List<Widget> teethTop = [];
   List<Widget> teethBottom = [];
-  List<Treatment> treatments = [];
+  List<Condition> conditions = [];
   Patient patient = Patient();
   bool isMapLoaded = false;
+  double? scale;
+  RiveAsset star = RiveAsset(
+    file: "assets/rive/icons.riv",
+    artboard: "LIKE/STAR",
+    stateMachineName: "STAR_Interactivity",
+    title: "Favourites",
+    smi: "active",
+    route: const Placeholder(),
+  );
   @override
   void initState() {
     isMapLoaded = false;
@@ -41,10 +54,13 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             },
             child: Column(
               children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.width / 18,
-                  width: MediaQuery.of(context).size.width / 18,
-                  child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: SizedBox(
+                    child: Image.asset(
+                        "assets/images/teeth/${tooth.toothCode[1]}${(int.parse(tooth.toothCode[2]) - 9).abs()}.png",
+                        scale: scale),
+                  ),
                 ),
                 const SizedBox(
                   height: 10,
@@ -68,10 +84,17 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             },
             child: Column(
               children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.width / 18,
-                  width: MediaQuery.of(context).size.width / 18,
-                  child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: SizedBox(
+                    child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.rotationY(math.pi),
+                      child: Image.asset(
+                          "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
+                          scale: scale),
+                    ),
+                  ),
                 ),
                 const SizedBox(
                   height: 10,
@@ -95,10 +118,13 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             },
             child: Column(
               children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.width / 18,
-                  width: MediaQuery.of(context).size.width / 18,
-                  child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: SizedBox(
+                    child: Image.asset(
+                        "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
+                        scale: scale),
+                  ),
                 ),
                 const SizedBox(
                   height: 10,
@@ -122,10 +148,17 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             },
             child: Column(
               children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.width / 18,
-                  width: MediaQuery.of(context).size.width / 18,
-                  child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: SizedBox(
+                    child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.rotationY(math.pi),
+                      child: Image.asset(
+                          "assets/images/teeth/${tooth.toothCode[1]}${(int.parse(tooth.toothCode[2]) - 9).abs()}.png",
+                          scale: scale),
+                    ),
+                  ),
                 ),
                 const SizedBox(
                   height: 10,
@@ -147,14 +180,14 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
 
   Future<String> loadPatientData() async {
     if (!isMapLoaded) {
-      treatments.add(Treatment(name: "None", price: 0.0));
+      conditions.add(Condition(name: "None", price: 0.0));
       var treatmentsResponse =
           await getData("$ServerIP/api/protected/GetDoctorTreatments");
       for (var obj in treatmentsResponse) {
-        Treatment treatment = Treatment();
-        treatment.name = obj["name"];
-        treatment.price = double.parse(obj["price"].toString());
-        treatments.add(treatment);
+        Condition condition = Condition();
+        condition.name = obj["name"];
+        condition.price = double.parse(obj["price"].toString());
+        conditions.add(condition);
       }
 
       var userResponse =
@@ -168,6 +201,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
       patient.phone = userResponse["phone"];
       patient.gender = userResponse["gender"];
       patient.age = userResponse["age"];
+      patient.isFavourite = userResponse["is_favourite"];
       var response =
           await postData("$ServerIP/api/protected/GetPatientTeethMap", {
         "patient_id": widget.patientID,
@@ -186,22 +220,37 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               onTap: () {
                 showTeethDialog(tooth);
               },
-              child: Column(
+              child: Stack(
                 children: [
                   SizedBox(
-                    height: MediaQuery.of(context).size.width / 18,
-                    width: MediaQuery.of(context).size.width / 18,
-                    child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
-                    style: TextStyle(
-                      color: tooth.condition.name == "None" ? null : Colors.red,
+                    child: Image.asset(
+                      "assets/images/teeth/${tooth.toothCode[1]}${(int.parse(tooth.toothCode[2]) - 9).abs()}.png",
+                      scale: scale,
                     ),
                   ),
+                  // Column(
+                  //   children: [
+                  //     SizedBox(
+                  //       height: MediaQuery.of(context).size.shortestSide > 500
+                  //           ? MediaQuery.of(context).size.height / 7
+                  //           : MediaQuery.of(context).size.height / 11,
+                  //     ),
+                  //     Align(
+                  //       alignment: Alignment.bottomCenter,
+                  //       child: Padding(
+                  //         padding: const EdgeInsets.only(left: 7),
+                  //         child: Text(
+                  //           "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
+                  //           style: TextStyle(
+                  //             color: tooth.condition.name == "None"
+                  //                 ? null
+                  //                 : Colors.red,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
@@ -213,22 +262,41 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               onTap: () {
                 showTeethDialog(tooth);
               },
-              child: Column(
+              child: Stack(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.width / 18,
-                    width: MediaQuery.of(context).size.width / 18,
-                    child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    "${int.parse(tooth.toothCode[2])}",
-                    style: TextStyle(
-                      color: tooth.condition.name == "None" ? null : Colors.red,
+                  Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(math.pi),
+                    child: SizedBox(
+                      child: Image.asset(
+                        "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
+                        scale: scale,
+                      ),
                     ),
                   ),
+                  // Column(
+                  //   children: [
+                  //     SizedBox(
+                  //       height: MediaQuery.of(context).size.shortestSide > 500
+                  //           ? MediaQuery.of(context).size.height / 7
+                  //           : MediaQuery.of(context).size.height / 11,
+                  //     ),
+                  //     Align(
+                  //       alignment: Alignment.bottomCenter,
+                  //       child: Padding(
+                  //         padding: const EdgeInsets.only(left: 7),
+                  //         child: Text(
+                  //           "${int.parse(tooth.toothCode[2])}",
+                  //           style: TextStyle(
+                  //             color: tooth.condition.name == "None"
+                  //                 ? null
+                  //                 : Colors.red,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
@@ -240,22 +308,37 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               onTap: () {
                 showTeethDialog(tooth);
               },
-              child: Column(
+              child: Stack(
                 children: [
                   SizedBox(
-                    height: MediaQuery.of(context).size.width / 18,
-                    width: MediaQuery.of(context).size.width / 18,
-                    child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
-                    style: TextStyle(
-                      color: tooth.condition.name == "None" ? null : Colors.red,
+                    child: Image.asset(
+                      "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
+                      scale: scale,
                     ),
                   ),
+                  // Column(
+                  //   children: [
+                  //     SizedBox(
+                  //       height: MediaQuery.of(context).size.shortestSide > 500
+                  //           ? MediaQuery.of(context).size.height / 7
+                  //           : MediaQuery.of(context).size.height / 11,
+                  //     ),
+                  //     Padding(
+                  //       padding: const EdgeInsets.only(left: 7),
+                  //       child: Align(
+                  //         alignment: Alignment.bottomCenter,
+                  //         child: Text(
+                  //           "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
+                  //           style: TextStyle(
+                  //             color: tooth.condition.name == "None"
+                  //                 ? null
+                  //                 : Colors.red,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
@@ -267,22 +350,41 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               onTap: () {
                 showTeethDialog(tooth);
               },
-              child: Column(
+              child: Stack(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.width / 18,
-                    width: MediaQuery.of(context).size.width / 18,
-                    child: Image.asset("assets/images/teeth/LB1_Bottom.png"),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    "${int.parse(tooth.toothCode[2])}",
-                    style: TextStyle(
-                      color: tooth.condition.name == "None" ? null : Colors.red,
+                  Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(math.pi),
+                    child: SizedBox(
+                      child: Image.asset(
+                        "assets/images/teeth/${tooth.toothCode[1]}${(int.parse(tooth.toothCode[2]) - 9).abs()}.png",
+                        scale: scale,
+                      ),
                     ),
                   ),
+                  // Column(
+                  //   children: [
+                  //     SizedBox(
+                  //       height: MediaQuery.of(context).size.shortestSide > 500
+                  //           ? MediaQuery.of(context).size.height / 7
+                  //           : MediaQuery.of(context).size.height / 11,
+                  //     ),
+                  //     Align(
+                  //       alignment: Alignment.bottomCenter,
+                  //       child: Padding(
+                  //         padding: const EdgeInsets.only(left: 7),
+                  //         child: Text(
+                  //           "${int.parse(tooth.toothCode[2])}",
+                  //           style: TextStyle(
+                  //             color: tooth.condition.name == "None"
+                  //                 ? null
+                  //                 : Colors.red,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
@@ -297,18 +399,48 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    scale = MediaQuery.of(context).size.shortestSide > 500
+        ? MediaQuery.of(context).size.shortestSide / 400
+        : MediaQuery.of(context).size.shortestSide > 380
+            ? MediaQuery.of(context).size.shortestSide / 90
+            : MediaQuery.of(context).size.shortestSide / 80;
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F9),
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: const Color(0xFF011627),
-        title: Text(
-          "Patient: ${patient.name.split(" ").first}",
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
+      appBar: CustomAppBar(
+        title: "Patient: ${patient.name.split(" ").first}",
+        actions: [
+          GestureDetector(
+            onTap: () async {
+              patient.isFavourite = true;
+              await postData(
+                  "$ServerIP/api/protected/EditPatientFavouriteStatus", {
+                "patient_id": patient.id,
+              });
+              star.input!.change(true);
+              await Future.delayed(const Duration(milliseconds: 600), () {});
+              star.input!.change(false);
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              height: 40,
+              width: 40,
+              child: RiveAnimation.asset(
+                star.file,
+                artboard: star.artboard,
+                onInit: (artboard) {
+                  // (artboard.fills.first.children[0].name as SolidColor)
+                  //     .colorValue = (Colors.yellow).value;
+                  StateMachineController controller = getRiveController(
+                    artboard,
+                    star.stateMachineName,
+                  );
+
+                  star.input = controller.findSMI(star.smi) as SMIBool;
+                },
+              ),
+            ),
           ),
-        ),
+        ],
       ),
       body: FutureBuilder(
         future: loadPatientData(),
@@ -390,61 +522,6 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Center(
-                    child: TextButton(
-                      onPressed: () async {
-                        await postData("$ServerIP/api/protected/EditTeethMap", {
-                          "patient_id": patient.id,
-                          "patient_teeth_map": {
-                            "teeth": teethMap.toJSON(),
-                          },
-                        });
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PatientDetailScreen(
-                              patientID: widget.patientID,
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            left: 15.0,
-                            right: 15.0,
-                            top: 10.0,
-                            bottom: 10.0,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Text(
-                                "Save",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Icon(
-                                Icons.save_rounded,
-                                color: Colors.white,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
                 ],
               ),
             ),
@@ -519,10 +596,11 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     showSelectedItems: true,
                     showSearchBox: false,
                     enabled: true,
-                    items: treatments.map((e) => e.name.toString()).toList(),
+                    items: conditions.map((e) => e.name.toString()).toList(),
                     selectedItem: tooth.condition.name,
                     onChanged: (item) => setState(() {
-                      tooth.condition.name = item!;
+                      tooth.condition = conditions
+                          .firstWhere((element) => element.name == item);
                     }),
                   ),
                 ),
@@ -555,7 +633,14 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     : Container(),
                 const Spacer(),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    await postData("$ServerIP/api/protected/EditTeethMap", {
+                      "patient_id": patient.id,
+                      "patient_teeth_map": {
+                        "teeth": teethMap.toJSON(),
+                      },
+                    });
+
                     Navigator.pop(context);
                     reloadTeethMap();
                   },

@@ -19,6 +19,8 @@ func ConfigRoutes(router *gin.Engine) {
 	authorized.POST("/ChangeAppointmentPaymentStatus", Controllers.ChangeAppointmentPaymentStatus)
 	authorized.POST("/ChangeAppointmentCompletionStatus", Controllers.ChangeAppointmentCompletionStatus)
 	authorized.GET("/GetDoctorPatients", Controllers.GetDoctorPatients)
+	authorized.GET("/GetFavouritePatients", Controllers.GetFavouritePatients)
+	authorized.POST("/EditPatientFavouriteStatus", Controllers.EditPatientFavouriteStatus)
 	authorized.GET("/GetDoctorAppointments", Controllers.GetDoctorAppointments)
 	authorized.GET("/GetDoctorTreatments", Controllers.GetDoctorTreatments)
 	authorized.POST("/GetPatientTeethMap", Controllers.GetPatientTeethMap)

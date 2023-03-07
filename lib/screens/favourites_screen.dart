@@ -7,26 +7,27 @@ import 'package:clinic_management/screens/patient_details.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-class DoctorPatientScreen extends StatefulWidget {
-  const DoctorPatientScreen({super.key, required this.openDrawer});
+class FavouriteScreen extends StatefulWidget {
+  const FavouriteScreen({super.key, required this.openDrawer});
   final Function openDrawer;
   @override
-  State<DoctorPatientScreen> createState() => _DoctorPatientScreenState();
+  State<FavouriteScreen> createState() => _FavouriteScreenState();
 }
 
-class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
-  List<Patient> doctorPatients = [];
+class _FavouriteScreenState extends State<FavouriteScreen> {
+  List<Patient> favouritePatients = [];
   bool isLoaded = false;
   @override
   void initState() {
-    doctorPatients.clear();
+    favouritePatients.clear();
     isLoaded = false;
     super.initState();
   }
 
   Future<String> loadPatients() async {
     if (!isLoaded) {
-      var response = await getData("$ServerIP/api/protected/GetDoctorPatients");
+      var response =
+          await getData("$ServerIP/api/protected/GetFavouritePatients");
       if (response == null) {
         return "Empty";
       }
@@ -40,7 +41,7 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
         patient.gender = obj["gender"];
         patient.age = obj["age"];
         patient.isFavourite = obj["is_favourite"];
-        doctorPatients.add(patient);
+        favouritePatients.add(patient);
       }
       isLoaded = true;
     }
@@ -52,9 +53,8 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F5F9),
       appBar: CustomAppBar(
-        title: "My Patients",
+        title: "Favourites",
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 10),
@@ -110,7 +110,7 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
                     height: 10,
                   ),
                   ...List.generate(
-                    doctorPatients.length,
+                    favouritePatients.length,
                     (index) => Card(
                       elevation: 8.0,
                       margin: const EdgeInsets.symmetric(
@@ -121,7 +121,7 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
                               context,
                               MaterialPageRoute(
                                   builder: (_) => PatientDetailScreen(
-                                      patientID: doctorPatients[index].id)));
+                                      patientID: favouritePatients[index].id)));
                         },
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
@@ -129,14 +129,14 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
                             vertical: 5.0,
                           ),
                           title: Text(
-                            doctorPatients[index].name,
+                            favouritePatients[index].name,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
                           subtitle: Text(
-                            doctorPatients[index].gender,
+                            favouritePatients[index].gender,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

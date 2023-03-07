@@ -14,6 +14,7 @@ type Patient struct {
 	Phone           string   `json:"phone"`
 	Gender          string   `json:"gender"`
 	Age             int      `json:"age"`
+	IsFavourite     bool     `json:"is_favourite"`
 	PatientTeethMap TeethMap `json:"patient_teeth_map"`
 }
 

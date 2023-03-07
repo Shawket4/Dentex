@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"strings"
+
 	"github.com/Shawket4/ClinicManagement/Models"
 	"github.com/Shawket4/ClinicManagement/Utils/Token"
 	"github.com/gin-gonic/gin"
@@ -337,6 +339,66 @@ func GetDoctorPatients(c *gin.Context) {
 	c.JSON(http.StatusOK, patients)
 }
 
+func GetFavouritePatients(c *gin.Context) {
+	var patients []Models.Patient
+	var favouritePatients []Models.Patient
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	var doctor Models.Doctor
+	if err := Models.DB.Model(&Models.Doctor{}).Where("user_id = ?", user.ID).Find(&doctor).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	if err := Models.DB.Model(&Models.Patient{}).Where("doctor_id = ?", doctor.ID).Preload("PatientTeethMap").Find(&patients).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	for _, patient := range patients {
+		if patient.IsFavourite {
+			favouritePatients = append(favouritePatients, patient)
+		}
+	}
+	c.JSON(http.StatusOK, favouritePatients)
+}
+
+func EditPatientFavouriteStatus(c *gin.Context) {
+	var input struct {
+		PatientID uint `json:"patient_id"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	var patient Models.Patient
+	if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", input.PatientID).Find(&patient).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	patient.IsFavourite = !patient.IsFavourite
+	if err := Models.DB.Save(&patient).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Added Successfully"})
+}
+
 func GetDoctorSchedule(c *gin.Context) {
 	user_id, err := Token.ExtractTokenID(c)
 
@@ -371,6 +433,7 @@ func GetDoctorSchedule(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, err)
 			return
 		}
+
 		if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", appointment.PatientID).Select("name").Find(&appointment.PatientName).Error; err != nil {
 			log.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
@@ -419,12 +482,13 @@ func Search(c *gin.Context) {
 		return
 	}
 	var allPatients []Models.Patient
+	input.Query = strings.ToLower(input.Query)
 	// db.Where(
 	// 	db.Where("pizza = ?", "pepperoni").Where(db.Where("size = ?", "small").Or("size = ?", "medium")),
 	//   ).Or(
 	// 	db.Where("pizza = ?", "hawaiian").Where("size = ?", "xlarge"),
 	//   ).Find(&Pizza{}).Statement
-	if err := Models.DB.Model(&Models.Patient{}).Where("name LIKE ?", "%"+input.Query+"%").Or("address LIKE ?", "%"+input.Query+"%").Or("phone LIKE ?", "%"+input.Query+"%").Find(&allPatients).Error; err != nil {
+	if err := Models.DB.Model(&Models.Patient{}).Where("LOWER(name) LIKE ?", "%"+input.Query+"%").Or("LOWER(address) LIKE ?", "%"+input.Query+"%").Or("LOWER(phone) LIKE ?", "%"+input.Query+"%").Find(&allPatients).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return

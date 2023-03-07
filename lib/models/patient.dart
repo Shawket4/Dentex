@@ -6,11 +6,16 @@ class Patient {
   String phone = "";
   String gender = "";
   int age = 0;
+  bool isFavourite = false;
 }
 
 class Condition {
-  String name = "None";
-  double price = 0.0;
+  String? name = "None";
+  double? price = 0.0;
+  Condition({
+    this.name,
+    this.price,
+  });
 }
 
 class Tooth {

@@ -30,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     loadBottomItems(_changeDrawerState);
+    loadSideItems(_changeDrawerState);
     getData("$ServerIP/api/protected/user").then((response) {
       String userName = response["data"]["username"].toString();
       int permission = response["data"]["permission"];
