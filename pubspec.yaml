@@ -44,6 +44,7 @@ dependencies:
   material_color_generator: ^1.1.0
   intl: ^0.18.0
   rive: ^0.10.2
+  flutter_svg: ^2.0.2
 
 dev_dependencies:
   flutter_test:

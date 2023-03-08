@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:clinic_management/screens/home_screen.dart';
-import 'package:clinic_management/screens/sign_up.dart';
 import 'package:lottie/lottie.dart';
 import '../main.dart';
 
@@ -40,21 +39,11 @@ class _LoginPageState extends State<LoginPage> {
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(10),
                 child: const Text(
-                  'Clinic Manager',
+                  'DENTEX',
                   style: TextStyle(
                     // color: Color(0xFF011627),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                  ),
-                )),
-            Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(10),
-                child: const Text(
-                  'Sign in',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 30,
                   ),
                 )),
             Container(
@@ -98,17 +87,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-            TextButton(
-              onPressed: () {
-                //forgot password screen
-              },
-              child: const Text(
-                'Forgot Password?',
-                style: TextStyle(
-                  color: Color(0xFF5bc0be),
-                ),
-              ),
-            ),
             Container(
               height: 50,
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -125,6 +103,29 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 onPressed: () async {
                   try {
+                    showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) {
+                          dialogContext = context;
+                          return Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: SizedBox(
+                              height: 400,
+                              width: double.infinity,
+                              child: Center(
+                                // Display lottie animation
+                                child: Lottie.asset(
+                                  "assets/lottie/Loading.json",
+                                  height: 200,
+                                  width: 200,
+                                ),
+                              ),
+                            ),
+                          );
+                        });
                     var response = await dio.post("$ServerIP/api/login", data: {
                       "username": usernameController.text,
                       "password": passwordController.text
@@ -222,6 +223,7 @@ class _LoginPageState extends State<LoginPage> {
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(dialogContext);
+                                    Navigator.pop(dialogContext);
                                   },
                                   child: const Text(
                                     "Close",
@@ -241,24 +243,6 @@ class _LoginPageState extends State<LoginPage> {
                   }
                 },
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const Text("Don't have an account?"),
-                TextButton(
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(fontSize: 18, color: Color(0xFF5bc0be)),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                        MaterialPageRoute(builder: (BuildContext context) {
-                      return const SignUp();
-                    }));
-                  },
-                )
-              ],
             ),
           ],
         ),

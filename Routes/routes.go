@@ -27,6 +27,7 @@ func ConfigRoutes(router *gin.Engine) {
 	authorized.POST("/EditTeethMap", Controllers.EditTeethMap)
 	authorized.POST("/GetPatientDetails", Controllers.GetPatientDetails)
 	authorized.GET("/GetDoctorSchedule", Controllers.GetDoctorSchedule)
+	authorized.GET("/GetDoctorEarnings", Controllers.GetDoctorEarnings)
 	authorized.POST("/Search", Controllers.Search)
 	// authorized.GET("/GetDoctorWorkingHours", Controllers.GetDoctorWorkingHours)
 	adminRoutes := router.Group("/api/admin")

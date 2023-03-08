@@ -3,7 +3,9 @@ package Controllers
 import (
 	"fmt"
 	"log"
+	"math"
 	"net/http"
+	"time"
 
 	"strings"
 
@@ -337,6 +339,72 @@ func GetDoctorPatients(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, patients)
+}
+
+func GetDoctorEarnings(c *gin.Context) {
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	var doctor Models.Doctor
+	if err := Models.DB.Model(&Models.Doctor{}).Where("user_id = ?", user.ID).Find(&doctor).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	var allAppointments []Models.Appointment
+	var completedAppointments []Models.Appointment
+	if err := Models.DB.Model(&Models.Appointment{}).Where("doctor_id = ?", doctor.ID).Find(&allAppointments).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	for _, appointment := range allAppointments {
+		if appointment.IsCompleted {
+			completedAppointments = append(completedAppointments, appointment)
+		}
+	}
+	var earningsLast7Days float64
+	var earningsThisMonth float64
+	var allEarnings float64
+	// print(completedAppointments)
+	for _, appointment := range completedAppointments {
+		fmt.Println(appointment.DateTime[:10])
+		var appointmentTime time.Time
+		appointmentTime, err = time.Parse("2006/01/02", appointment.DateTime[:10])
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		currentTime, err := time.Parse("2006/01/02", time.Now().Format("2006/01/02"))
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		year, month, day := appointmentTime.Date()
+		currentYear, currentMonth, currentDay := currentTime.Date()
+		fmt.Println(int(currentMonth))
+		fmt.Println(int(month))
+		if year == currentYear && int(month) == int(currentMonth) {
+			if math.Abs(float64(currentDay-day)) <= 7 {
+				fmt.Println(float64(currentDay - day))
+				earningsLast7Days += appointment.Price
+			}
+			earningsThisMonth += appointment.Price
+		}
+		allEarnings += appointment.Price
+	}
+	c.JSON(http.StatusOK, gin.H{"earnings_last_7_days": earningsLast7Days, "earnings_this_month": earningsThisMonth, "all_earnings": allEarnings})
 }
 
 func GetFavouritePatients(c *gin.Context) {

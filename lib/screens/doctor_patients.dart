@@ -97,7 +97,7 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
                 child: Opacity(
                   opacity: 0.5,
                   child: Text(
-                    "No Favourites Exist",
+                    "No Patients Exist",
                     style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
                   ),
                 ),

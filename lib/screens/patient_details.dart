@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:clinic_management/components/app_bar.dart';
-import 'package:clinic_management/components/bottom_nav_bar.dart';
 import 'package:clinic_management/components/rive_controller.dart';
 import 'package:clinic_management/dio_helper.dart';
 import 'package:clinic_management/main.dart';

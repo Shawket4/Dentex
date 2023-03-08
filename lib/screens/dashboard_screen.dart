@@ -26,13 +26,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Appointment> allAppointments = [];
   List<Appointment> currentMonthAppointments = [];
   List<Widget> appointmentWidgetsToday = [];
+  double? earningsLast7Days;
+  double? earningsThisMonth;
+
   @override
   void initState() {
     isUserLoaded = false;
     super.initState();
   }
 
-  Future<User> get GetUserInfo async {
+  Future<User> get GetDoctorSummary async {
     if (!isUserLoaded) {
       isUserLoaded = true;
       DateTime currentDate = DateTime.now();
@@ -130,6 +133,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         }
       }
+      response = await getData("$ServerIP/api/protected/GetDoctorEarnings");
+      earningsLast7Days =
+          double.parse(response["earnings_last_7_days"].toString());
+      earningsThisMonth =
+          double.parse(response["earnings_this_month"].toString());
       setState(() {});
     }
     return userInfo;
@@ -167,7 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
       body: FutureBuilder(
-          future: GetUserInfo,
+          future: GetDoctorSummary,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(
@@ -228,7 +236,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 child: Text(
                                   "Today's Appointments (${appointmentWidgetsToday.length})",
                                   style: const TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 22,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -322,9 +330,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const Align(
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                  "Appointments This Month",
+                                  "Earnings Last 7 Days",
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 22,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -332,9 +340,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Align(
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                  currentMonthAppointments.length.toString(),
+                                  "\$$earningsLast7Days",
                                   style: const TextStyle(
-                                    fontSize: 64,
+                                    fontSize: 35,
                                     fontFamily: "Iowan Old",
                                     fontWeight: FontWeight.w900,
                                     color: Color(0xFF696969),
@@ -344,9 +352,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const Align(
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                  "All Appointments",
+                                  "Earnings This Month",
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 22,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -354,9 +362,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Align(
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                  allAppointments.length.toString(),
+                                  "\$$earningsThisMonth",
                                   style: const TextStyle(
-                                    fontSize: 64,
+                                    fontSize: 35,
                                     fontFamily: "Iowan Old",
                                     fontWeight: FontWeight.w900,
                                     color: Color(0xFF696969),
