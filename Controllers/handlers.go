@@ -704,7 +704,7 @@ func GetDoctorAppointments(c *gin.Context) {
 	}
 	for i, s := range appointments {
 		var patientName string
-		if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", s.PatientID).Select("name").Find(&patientName); err != nil {
+		if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", s.PatientID).Select("name").Find(&patientName).Error; err != nil {
 			log.Println(err)
 			c.JSON(http.StatusInternalServerError, err)
 			return
@@ -719,4 +719,44 @@ func GetDoctorAppointments(c *gin.Context) {
 		appointments[i].ToothCode = toothCode
 	}
 	c.JSON(http.StatusOK, appointments)
+}
+
+func GetToothHistory(c *gin.Context) {
+	var input struct {
+		ToothID uint `json:"tooth_id"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	var tooth Models.Tooth
+	if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", input.ToothID).Preload("ToothHistory").Find(&tooth).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	for i, s := range tooth.ToothHistory {
+		fmt.Println(s)
+		var patientName string
+		if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", s.PatientID).Select("name").Find(&patientName).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+		var toothCode string
+		if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", s.ToothID).Select("tooth_code").Find(&toothCode).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+		tooth.ToothHistory[i].PatientName = patientName
+		tooth.ToothHistory[i].ToothCode = toothCode
+	}
+	c.JSON(http.StatusOK, tooth)
+	// var appointments []Models.Appointment
+	// for _, appointment := range tooth.ToothHistory {
+
+	// }
+
 }
