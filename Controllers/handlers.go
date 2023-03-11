@@ -243,12 +243,24 @@ func ChangeAppointmentCompletionStatus(c *gin.Context) {
 	}
 	appointment.IsPaid = input.CompletionStatus
 	appointment.IsCompleted = input.CompletionStatus
-	if err := Models.DB.Save(&appointment).Error; err != nil {
-		c.String(http.StatusBadRequest, "Couldn't Update Appointment Payment Status")
+	var tooth Models.Tooth
+	if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Error; err != nil {
+		c.String(http.StatusBadRequest, "Couldn't Find Tooth")
 		c.Abort()
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Payment Status Updated Successfully"})
+	tooth.Condition = "None"
+	if err := Models.DB.Save(&tooth).Error; err != nil {
+		c.String(http.StatusBadRequest, "Couldn't Update Tooth Condition")
+		c.Abort()
+		return
+	}
+	if err := Models.DB.Save(&appointment).Error; err != nil {
+		c.String(http.StatusBadRequest, "Couldn't Update Appointment Completion Status")
+		c.Abort()
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Completion Status Updated Successfully"})
 }
 
 func GetAllDoctors(c *gin.Context) {
