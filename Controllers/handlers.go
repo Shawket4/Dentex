@@ -243,18 +243,78 @@ func ChangeAppointmentCompletionStatus(c *gin.Context) {
 	}
 	appointment.IsPaid = input.CompletionStatus
 	appointment.IsCompleted = input.CompletionStatus
-	var tooth Models.Tooth
-	if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Error; err != nil {
-		c.String(http.StatusBadRequest, "Couldn't Find Tooth")
-		c.Abort()
-		return
+
+	if appointment.IsCompleted {
+		var tooth Models.Tooth
+
+		if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Error; err != nil {
+			c.String(http.StatusBadRequest, "Couldn't Find Tooth")
+			c.Abort()
+			return
+		}
+		tooth.Condition = "None"
+		var teethMap Models.TeethMap
+		if err := Models.DB.Model(&Models.TeethMap{}).Where("id = ?", tooth.TeethMapID).Preload("Teeth").Find(&teethMap).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+		}
+		for index, s := range teethMap.Teeth {
+			fmt.Println(tooth.ID)
+			if s.ID == tooth.ID {
+				teethMap.Teeth[index] = tooth
+			}
+		}
+
+		// if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Update("condition", "None").Error; err != nil {
+
+		var patient Models.Patient
+		if err := Models.DB.Model(&Models.Patient{}).Preload("TeethMap").Where("id = ?", teethMap.PatientID).Find(&patient).Error; err != nil {
+			c.String(http.StatusBadRequest, "Couldn't Update Teeth Map")
+			c.Abort()
+			return
+		}
+
+		if err := Models.DB.Model(&patient.PatientTeethMap).Association("Teeth").Replace(&teethMap.Teeth); err != nil {
+			c.String(http.StatusBadRequest, "Couldn't Update Patient Teeth Map")
+			c.Abort()
+			return
+		}
+	} else {
+		var tooth Models.Tooth
+
+		if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Error; err != nil {
+			c.String(http.StatusBadRequest, "Couldn't Find Tooth")
+			c.Abort()
+			return
+		}
+		tooth.Condition = appointment.Treatment
+		var teethMap Models.TeethMap
+		if err := Models.DB.Model(&Models.TeethMap{}).Where("id = ?", tooth.TeethMapID).Preload("Teeth").Find(&teethMap).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+		}
+		for index, s := range teethMap.Teeth {
+			if s.ID == tooth.ID {
+				teethMap.Teeth[index] = tooth
+			}
+		}
+
+		// if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Update("condition", "None").Error; err != nil {
+
+		var patient Models.Patient
+		if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", teethMap.PatientID).Find(&patient).Error; err != nil {
+			c.String(http.StatusBadRequest, "Couldn't Update Teeth Map")
+			c.Abort()
+			return
+		}
+		patient.PatientTeethMap = teethMap
+		if err := Models.DB.Save(&patient).Error; err != nil {
+			c.String(http.StatusBadRequest, "Couldn't Update Patient Teeth Map")
+			c.Abort()
+			return
+		}
 	}
-	tooth.Condition = "None"
-	if err := Models.DB.Save(&tooth).Error; err != nil {
-		c.String(http.StatusBadRequest, "Couldn't Update Tooth Condition")
-		c.Abort()
-		return
-	}
+
 	if err := Models.DB.Save(&appointment).Error; err != nil {
 		c.String(http.StatusBadRequest, "Couldn't Update Appointment Completion Status")
 		c.Abort()
