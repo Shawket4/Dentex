@@ -9,8 +9,8 @@ import (
 
 	"strings"
 
-	"github.com/Shawket4/ClinicManagement/Models"
-	"github.com/Shawket4/ClinicManagement/Utils/Token"
+	"github.com/Shawket4/Dentex/Models"
+	"github.com/Shawket4/Dentex/Utils/Token"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -324,14 +324,13 @@ func EditTeethMap(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err)
 	}
 
-	// patient.PatientTeethMap = input.PatientTeethMap
+	patient.PatientTeethMap = input.PatientTeethMap
 	for index, tooth := range patient.PatientTeethMap.Teeth {
-		if tooth.Condition != input.PatientTeethMap.Teeth[index].Condition {
-			if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", tooth.ID).Update("condition", input.PatientTeethMap.Teeth[index].Condition).Error; err != nil {
-				log.Println(err)
-				c.JSON(http.StatusInternalServerError, err)
-				return
-			}
+		if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", tooth.ID).Updates(input.PatientTeethMap.Teeth[index]).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+			return
+
 		}
 		// patient.PatientTeethMap.Teeth[index].Condition = input.PatientTeethMap.Teeth[index].Condition
 		// patient.PatientTeethMap.Teeth[index].IsTreated = input.PatientTeethMap.Teeth[index].IsTreated
@@ -615,6 +614,7 @@ func RegisterTreatment(c *gin.Context) {
 	var input struct {
 		TreatmentName  string  `json:"treatment_name"`
 		TreatmentPrice float64 `json:"treatment_price"`
+		HexColor       string  `json:"hex_color"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		log.Println(err)
@@ -640,6 +640,7 @@ func RegisterTreatment(c *gin.Context) {
 
 	treatment.Name = input.TreatmentName
 	treatment.Price = input.TreatmentPrice
+	treatment.HexColor = input.HexColor
 	treatment.DoctorID = user.ID
 
 	if err := Models.DB.Save(&treatment).Error; err != nil {

@@ -1,15 +1,17 @@
 // ignore_for_file: use_build_context_synchronously, non_constant_identifier_names, unused_import
 
-import 'package:clinic_management/components/app_bar.dart';
-import 'package:clinic_management/components/bottom_nav_bar.dart';
-import 'package:clinic_management/components/drawer.dart';
-import 'package:clinic_management/dio_helper.dart';
-import 'package:clinic_management/models/appointment.dart';
-import 'package:clinic_management/models/user.dart';
-import 'package:clinic_management/screens/appointment_details_screen.dart';
+import 'package:dentex/components/app_bar.dart';
+import 'package:dentex/components/bottom_nav_bar.dart';
+import 'package:dentex/components/drawer.dart';
+import 'package:dentex/dio_helper.dart';
+import 'package:dentex/models/appointment.dart';
+import 'package:dentex/models/user.dart';
+import 'package:dentex/screens/all_appointments.dart';
+import 'package:dentex/screens/appointment_details_screen.dart';
+import 'package:dentex/screens/patient_details.dart';
 import 'package:flutter/material.dart';
-import 'package:clinic_management/screens/login_page.dart';
-import 'package:clinic_management/main.dart';
+import 'package:dentex/screens/login_screen.dart';
+import 'package:dentex/main.dart';
 import 'package:lottie/lottie.dart';
 import 'package:intl/intl.dart' as intl;
 
@@ -37,15 +39,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<User> get GetDoctorSummary async {
     if (!isUserLoaded) {
-      isUserLoaded = true;
       DateTime currentDate = DateTime.now();
+      isUserLoaded = true;
       var response = await getData("$ServerIP/api/protected/GetDoctorSchedule");
       if (userInfo.permission == 2) {
         return userInfo;
       }
       for (var obj in response["schedule"]["time_blocks"]) {
         obj = obj["appointment"];
-
         Appointment appointment = Appointment();
         appointment.id = obj["ID"];
         appointment.date =
@@ -54,7 +55,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         appointment.toothID = obj["tooth_id"];
         appointment.patientName = obj["patient_name"];
         appointment.toothCode = obj["tooth_code"];
-        appointment.treatment = obj["treatment"];
+        appointment.condition.name = obj["treatment"];
+        appointment.condition.color = obj["hex_color"] == ""
+            ? Colors.white
+            : HexColor.fromHex(obj["hex_color"]);
         appointment.price = double.parse(obj["price"].toString());
         appointment.isPaid = obj["is_paid"];
         appointment.isCompleted = obj["is_completed"];
@@ -64,9 +68,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
             appointment.date!.month == currentDate.month) {
           currentMonthAppointments.add(appointment);
         }
+      }
+      response = await getData("$ServerIP/api/protected/GetDoctorEarnings");
+      earningsLast7Days =
+          double.parse(response["earnings_last_7_days"].toString());
+      earningsThisMonth =
+          double.parse(response["earnings_this_month"].toString());
+      allAppointments.sort(
+        (a, b) => b.date!.compareTo(a.date!),
+      );
+      for (var appointment in allAppointments) {
         if (appointment.date!.year == currentDate.year &&
             appointment.date!.month == currentDate.month &&
-            appointment.date!.day == currentDate.day) {
+            appointment.date!.day == currentDate.day &&
+            !appointment.isCompleted!) {
           appointmentWidgetsToday.add(
             GestureDetector(
               onTap: () {
@@ -117,7 +132,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             height: 5,
                           ),
                           Text(
-                            appointment.treatment.toString(),
+                            appointment.condition.name.toString(),
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -133,11 +148,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         }
       }
-      response = await getData("$ServerIP/api/protected/GetDoctorEarnings");
-      earningsLast7Days =
-          double.parse(response["earnings_last_7_days"].toString());
-      earningsThisMonth =
-          double.parse(response["earnings_this_month"].toString());
       setState(() {});
     }
     return userInfo;
@@ -279,7 +289,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 child: Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => AllAppointments(
+                                            allAppointments: allAppointments,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                     child: Container(
                                       width: 130,
                                       height: 40,
@@ -340,7 +359,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Align(
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                  "\$$earningsLast7Days",
+                                  "LE $earningsLast7Days",
                                   style: const TextStyle(
                                     fontSize: 35,
                                     fontFamily: "Iowan Old",
@@ -362,7 +381,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Align(
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                  "\$$earningsThisMonth",
+                                  "LE $earningsThisMonth",
                                   style: const TextStyle(
                                     fontSize: 35,
                                     fontFamily: "Iowan Old",

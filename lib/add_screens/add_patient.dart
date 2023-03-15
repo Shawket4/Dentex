@@ -2,7 +2,7 @@
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:clinic_management/screens/home_screen.dart';
+import 'package:dentex/screens/home_screen.dart';
 import 'package:lottie/lottie.dart';
 import '../main.dart';
 

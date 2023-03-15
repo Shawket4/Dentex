@@ -1,5 +1,5 @@
-name: clinic_management
-description: A new Flutter project.
+name: dentex
+description: Dentex-Clinic Management.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -45,6 +45,9 @@ dependencies:
   intl: ^0.18.0
   rive: ^0.10.2
   flutter_svg: ^2.0.2
+  grouped_list: ^5.1.2
+  image: ^4.0.15
+  flutter_colorpicker: ^1.0.3
 
 dev_dependencies:
   flutter_test:

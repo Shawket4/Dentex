@@ -1,9 +1,9 @@
-import 'package:clinic_management/components/app_bar.dart';
-import 'package:clinic_management/dio_helper.dart';
-import 'package:clinic_management/main.dart';
-import 'package:clinic_management/models/patient.dart';
-import 'package:clinic_management/screens/login_page.dart';
-import 'package:clinic_management/screens/patient_details.dart';
+import 'package:dentex/components/app_bar.dart';
+import 'package:dentex/dio_helper.dart';
+import 'package:dentex/main.dart';
+import 'package:dentex/models/patient.dart';
+import 'package:dentex/screens/login_screen.dart';
+import 'package:dentex/screens/patient_details.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 

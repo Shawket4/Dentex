@@ -1,10 +1,10 @@
 // ignore_for_file: use_build_context_synchronously, prefer_const_constructors
 
-import 'package:clinic_management/dio_helper.dart';
-import 'package:clinic_management/main.dart';
-import 'package:clinic_management/models/appointment.dart';
-import 'package:clinic_management/screens/home_screen.dart';
-import 'package:clinic_management/screens/patient_details.dart';
+import 'package:dentex/dio_helper.dart';
+import 'package:dentex/main.dart';
+import 'package:dentex/models/appointment.dart';
+import 'package:dentex/screens/home_screen.dart';
+import 'package:dentex/screens/patient_details.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -25,7 +25,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
         centerTitle: true,
         backgroundColor: const Color(0xFF011627),
         title: Text(
-          "${widget.appointment.treatment} Appointment",
+          "${widget.appointment.condition.name} Appointment",
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600,
@@ -87,7 +87,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text(
-                "Case: ${widget.appointment.treatment}",
+                "Case: ${widget.appointment.condition.name}",
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,

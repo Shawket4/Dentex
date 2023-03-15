@@ -1,6 +1,6 @@
-import 'package:clinic_management/dio_helper.dart';
-import 'package:clinic_management/main.dart';
-import 'package:clinic_management/models/appointment.dart';
+import 'package:dentex/dio_helper.dart';
+import 'package:dentex/main.dart';
+import 'package:dentex/models/appointment.dart';
 import 'package:flutter/material.dart';
 
 class AppointmentScreen extends StatefulWidget {
@@ -20,7 +20,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         appointment.id = obj["ID"];
         appointment.date = DateTime.parse(obj["date"]);
         appointment.patientName = obj["patient_name"];
-        appointment.treatment = obj["treatment"];
+        appointment.condition.name = obj["treatment"];
+        appointment.condition.color = HexColor.fromHex(obj["hex_color"]);
         appointment.price = obj["price"];
         appointment.isPaid = obj["paid"];
         appointments.add(appointment);

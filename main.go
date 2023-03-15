@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/Shawket4/ClinicManagement/Models"
-	"github.com/Shawket4/ClinicManagement/Routes"
+	"github.com/Shawket4/Dentex/Models"
+	"github.com/Shawket4/Dentex/Routes"
 	"github.com/gin-gonic/gin"
 )
 

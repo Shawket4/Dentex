@@ -1,16 +1,36 @@
 // ignore_for_file: unused_local_variable, non_constant_identifier_names, constant_identifier_names, unused_import
-import 'package:clinic_management/components/bottom_nav_bar.dart';
-import 'package:clinic_management/models/user.dart';
+import 'package:dentex/components/bottom_nav_bar.dart';
+import 'package:dentex/models/user.dart';
 import 'package:flutter/material.dart';
-import 'package:clinic_management/screens/home_screen.dart';
-import 'package:clinic_management/screens/login_page.dart';
+import 'package:dentex/screens/home_screen.dart';
+import 'package:dentex/screens/login_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:material_color_generator/material_color_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
 
+extension HexColor on Color {
+  /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
+  static Color fromHex(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
+  /// Prefixes a hash sign if [leadingHashSign] is set to `true` (default is `true`).
+  String toHex({bool leadingHashSign = true}) => '${leadingHashSign ? '#' : ''}'
+      '${alpha.toRadixString(16).padLeft(2, '0')}'
+      '${red.toRadixString(16).padLeft(2, '0')}'
+      '${green.toRadixString(16).padLeft(2, '0')}'
+      '${blue.toRadixString(16).padLeft(2, '0')}';
+}
+
+// const String ServerIP = "http://144.126.234.206:5505";
+const String ServerIP = "http://localhost:5505";
+
 void main() {
-  runApp(const Router());
+  runApp(const MainWidget());
 }
 
 final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
@@ -44,16 +64,13 @@ Future<bool> get Logout async {
   return await prefs.remove("jwt");
 }
 
-const String ServerIP = "http://144.126.234.206:5505";
-// const String ServerIP = "http://localhost:5505";
-
-class Router extends StatefulWidget {
-  const Router({Key? key}) : super(key: key);
+class MainWidget extends StatefulWidget {
+  const MainWidget({Key? key}) : super(key: key);
   @override
-  State<Router> createState() => _RouterState();
+  State<MainWidget> createState() => _MainWidgetState();
 }
 
-class _RouterState extends State<Router> {
+class _MainWidgetState extends State<MainWidget> {
   @override
   void initState() {
     super.initState();
@@ -62,6 +79,7 @@ class _RouterState extends State<Router> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: "Dentex - Clinic Management",
       theme: ThemeData(
         fontFamily: "Inter",
         primaryColor: const Color(0xFF0b132b),

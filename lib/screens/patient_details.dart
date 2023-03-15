@@ -1,11 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
-
-import 'package:clinic_management/components/app_bar.dart';
-import 'package:clinic_management/components/rive_controller.dart';
-import 'package:clinic_management/dio_helper.dart';
-import 'package:clinic_management/main.dart';
-import 'package:clinic_management/models/patient.dart';
-import 'package:clinic_management/screens/make_appointment.dart';
+import 'package:dentex/components/app_bar.dart';
+import 'package:dentex/components/image_manipulation.dart';
+import 'package:dentex/components/rive_controller.dart';
+import 'package:dentex/dio_helper.dart';
+import 'package:dentex/main.dart';
+import 'package:dentex/models/patient.dart';
+import 'package:dentex/screens/make_appointment.dart';
+import 'package:dentex/screens/tooth_history_screen.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -21,8 +22,10 @@ class PatientDetailScreen extends StatefulWidget {
 
 class _PatientDetailScreenState extends State<PatientDetailScreen> {
   TeethMap teethMap = TeethMap();
-  List<Widget> teethTop = [];
-  List<Widget> teethBottom = [];
+  List<Widget> teethTopLeft = [];
+  List<Widget> teethTopRight = [];
+  List<Widget> teethBottomLeft = [];
+  List<Widget> teethBottomRight = [];
   List<Condition> conditions = [];
   Patient patient = Patient();
   bool isMapLoaded = false;
@@ -41,134 +44,80 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     super.initState();
   }
 
-  void reloadTeethMap() {
-    teethBottom = [];
-    teethTop = [];
+  Future<void> reloadTeethMap() async {
+    teethBottomLeft = [];
+    teethBottomRight = [];
+    teethTopLeft = [];
+    teethTopRight = [];
     for (var tooth in teethMap.teeth) {
       if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "L") {
-        teethBottom.add(
+        final imageBytes = await returnColoredTooth(
+            "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+            tooth.condition.color!);
+        teethBottomLeft.add(
           GestureDetector(
             onTap: () {
               showTeethDialog(tooth);
             },
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: SizedBox(
-                    child: Image.asset(
-                        "assets/images/teeth/${tooth.toothCode[1]}${(int.parse(tooth.toothCode[2]) - 9).abs()}.png",
-                        scale: scale),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
-                  style: TextStyle(
-                    color: tooth.condition.name == "None" ? null : Colors.red,
-                  ),
-                ),
-              ],
+            child: Image.memory(
+              imageBytes,
+              scale: scale!,
             ),
           ),
         );
       }
       if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "R") {
-        teethBottom.add(
+        final imageBytes = await returnColoredTooth(
+            "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+            tooth.condition.color!);
+        teethBottomRight.add(
           GestureDetector(
             onTap: () {
               showTeethDialog(tooth);
             },
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: SizedBox(
-                    child: Transform(
-                      alignment: Alignment.center,
-                      transform: Matrix4.rotationY(math.pi),
-                      child: Image.asset(
-                          "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
-                          scale: scale),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  "${int.parse(tooth.toothCode[2])}",
-                  style: TextStyle(
-                    color: tooth.condition.name == "None" ? null : Colors.red,
-                  ),
-                ),
-              ],
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.rotationY(math.pi),
+              child: Image.memory(
+                imageBytes,
+                scale: scale!,
+              ),
             ),
           ),
         );
       }
       if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "L") {
-        teethTop.add(
+        final imageBytes = await returnColoredTooth(
+            "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+            tooth.condition.color!);
+        teethTopLeft.add(
           GestureDetector(
             onTap: () {
               showTeethDialog(tooth);
             },
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: SizedBox(
-                    child: Image.asset(
-                        "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
-                        scale: scale),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
-                  style: TextStyle(
-                    color: tooth.condition.name == "None" ? null : Colors.red,
-                  ),
-                ),
-              ],
+            child: Image.memory(
+              imageBytes,
+              scale: scale!,
             ),
           ),
         );
       }
       if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
-        teethTop.add(
+        final imageBytes = await returnColoredTooth(
+            "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+            tooth.condition.color!);
+        teethTopRight.add(
           GestureDetector(
             onTap: () {
               showTeethDialog(tooth);
             },
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: SizedBox(
-                    child: Transform(
-                      alignment: Alignment.center,
-                      transform: Matrix4.rotationY(math.pi),
-                      child: Image.asset(
-                          "assets/images/teeth/${tooth.toothCode[1]}${(int.parse(tooth.toothCode[2]) - 9).abs()}.png",
-                          scale: scale),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  "${int.parse(tooth.toothCode[2])}",
-                  style: TextStyle(
-                    color: tooth.condition.name == "None" ? null : Colors.red,
-                  ),
-                ),
-              ],
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.rotationY(math.pi),
+              child: Image.memory(
+                imageBytes,
+                scale: scale!,
+              ),
             ),
           ),
         );
@@ -179,13 +128,16 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
 
   Future<String> loadPatientData() async {
     if (!isMapLoaded) {
-      conditions.add(Condition(name: "None", price: 0.0));
+      conditions.add(Condition(name: "None", price: 0.0, color: Colors.white));
       var treatmentsResponse =
           await getData("$ServerIP/api/protected/GetDoctorTreatments");
       for (var obj in treatmentsResponse) {
         Condition condition = Condition();
         condition.name = obj["name"];
         condition.price = double.parse(obj["price"].toString());
+        condition.color = obj["hex_color"] == ""
+            ? Colors.white
+            : HexColor.fromHex(obj["hex_color"]);
         conditions.add(condition);
       }
 
@@ -205,186 +157,88 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           await postData("$ServerIP/api/protected/GetPatientTeethMap", {
         "patient_id": widget.patientID,
       });
+      List<dynamic> teeth = response["teeth"];
+      teeth.sort((a, b) => a["tooth_code"].compareTo(b["tooth_code"]));
 
-      for (var obj in response["teeth"]) {
+      for (var obj in teeth) {
         Tooth tooth = Tooth();
         tooth.id = obj["ID"];
         tooth.toothCode = obj["tooth_code"];
         tooth.condition.name = obj["condition"];
+
+        tooth.condition.color = obj["hex_color"] == ""
+            ? Colors.white
+            : HexColor.fromHex(obj["hex_color"]);
         tooth.isTreated = obj["is_treated"];
         teethMap.teeth.add(tooth);
         if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "L") {
-          teethBottom.add(
+          final imageBytes = await returnColoredTooth(
+              "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              tooth.condition.color!);
+          teethBottomLeft.add(
             GestureDetector(
               onTap: () {
                 showTeethDialog(tooth);
               },
-              child: Stack(
-                children: [
-                  SizedBox(
-                    child: Image.asset(
-                      "assets/images/teeth/${tooth.toothCode[1]}${(int.parse(tooth.toothCode[2]) - 9).abs()}.png",
-                      scale: scale,
-                    ),
-                  ),
-                  // Column(
-                  //   children: [
-                  //     SizedBox(
-                  //       height: MediaQuery.of(context).size.shortestSide > 500
-                  //           ? MediaQuery.of(context).size.height / 7
-                  //           : MediaQuery.of(context).size.height / 11,
-                  //     ),
-                  //     Align(
-                  //       alignment: Alignment.bottomCenter,
-                  //       child: Padding(
-                  //         padding: const EdgeInsets.only(left: 7),
-                  //         child: Text(
-                  //           "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
-                  //           style: TextStyle(
-                  //             color: tooth.condition.name == "None"
-                  //                 ? null
-                  //                 : Colors.red,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                ],
+              child: Image.memory(
+                imageBytes,
+                scale: scale!,
               ),
             ),
           );
         }
         if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "R") {
-          teethBottom.add(
+          final imageBytes = await returnColoredTooth(
+              "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              tooth.condition.color!);
+          teethBottomRight.add(
             GestureDetector(
               onTap: () {
                 showTeethDialog(tooth);
               },
-              child: Stack(
-                children: [
-                  Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.rotationY(math.pi),
-                    child: SizedBox(
-                      child: Image.asset(
-                        "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
-                        scale: scale,
-                      ),
-                    ),
-                  ),
-                  // Column(
-                  //   children: [
-                  //     SizedBox(
-                  //       height: MediaQuery.of(context).size.shortestSide > 500
-                  //           ? MediaQuery.of(context).size.height / 7
-                  //           : MediaQuery.of(context).size.height / 11,
-                  //     ),
-                  //     Align(
-                  //       alignment: Alignment.bottomCenter,
-                  //       child: Padding(
-                  //         padding: const EdgeInsets.only(left: 7),
-                  //         child: Text(
-                  //           "${int.parse(tooth.toothCode[2])}",
-                  //           style: TextStyle(
-                  //             color: tooth.condition.name == "None"
-                  //                 ? null
-                  //                 : Colors.red,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                ],
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(math.pi),
+                child: Image.memory(
+                  imageBytes,
+                  scale: scale!,
+                ),
               ),
             ),
           );
         }
         if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "L") {
-          teethTop.add(
+          final imageBytes = await returnColoredTooth(
+              "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              tooth.condition.color!);
+          teethTopLeft.add(
             GestureDetector(
               onTap: () {
                 showTeethDialog(tooth);
               },
-              child: Stack(
-                children: [
-                  SizedBox(
-                    child: Image.asset(
-                      "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
-                      scale: scale,
-                    ),
-                  ),
-                  // Column(
-                  //   children: [
-                  //     SizedBox(
-                  //       height: MediaQuery.of(context).size.shortestSide > 500
-                  //           ? MediaQuery.of(context).size.height / 7
-                  //           : MediaQuery.of(context).size.height / 11,
-                  //     ),
-                  //     Padding(
-                  //       padding: const EdgeInsets.only(left: 7),
-                  //       child: Align(
-                  //         alignment: Alignment.bottomCenter,
-                  //         child: Text(
-                  //           "${(int.parse(tooth.toothCode[2]) - 9).abs()}",
-                  //           style: TextStyle(
-                  //             color: tooth.condition.name == "None"
-                  //                 ? null
-                  //                 : Colors.red,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                ],
+              child: Image.memory(
+                imageBytes,
+                scale: scale!,
               ),
             ),
           );
         }
         if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
-          teethTop.add(
+          final imageBytes = await returnColoredTooth(
+              "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              tooth.condition.color!);
+          teethTopRight.add(
             GestureDetector(
               onTap: () {
                 showTeethDialog(tooth);
               },
-              child: Stack(
-                children: [
-                  Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.rotationY(math.pi),
-                    child: SizedBox(
-                      child: Image.asset(
-                        "assets/images/teeth/${tooth.toothCode[1]}${(int.parse(tooth.toothCode[2]) - 9).abs()}.png",
-                        scale: scale,
-                      ),
-                    ),
-                  ),
-                  // Column(
-                  //   children: [
-                  //     SizedBox(
-                  //       height: MediaQuery.of(context).size.shortestSide > 500
-                  //           ? MediaQuery.of(context).size.height / 7
-                  //           : MediaQuery.of(context).size.height / 11,
-                  //     ),
-                  //     Align(
-                  //       alignment: Alignment.bottomCenter,
-                  //       child: Padding(
-                  //         padding: const EdgeInsets.only(left: 7),
-                  //         child: Text(
-                  //           "${int.parse(tooth.toothCode[2])}",
-                  //           style: TextStyle(
-                  //             color: tooth.condition.name == "None"
-                  //                 ? null
-                  //                 : Colors.red,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                ],
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(math.pi),
+                child: Image.memory(
+                  imageBytes,
+                  scale: scale!,
+                ),
               ),
             ),
           );
@@ -399,10 +253,10 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   @override
   Widget build(BuildContext context) {
     scale = MediaQuery.of(context).size.shortestSide > 500
-        ? MediaQuery.of(context).size.shortestSide / 400
+        ? MediaQuery.of(context).size.shortestSide / 180
         : MediaQuery.of(context).size.shortestSide > 380
-            ? MediaQuery.of(context).size.shortestSide / 90
-            : MediaQuery.of(context).size.shortestSide / 80;
+            ? MediaQuery.of(context).size.shortestSide / 38
+            : MediaQuery.of(context).size.shortestSide / 28;
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F9),
       appBar: CustomAppBar(
@@ -467,7 +321,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: teethTop,
+                        children:
+                            teethTopLeft.reversed.toList() + teethTopRight,
                       ),
                     ),
                   ),
@@ -476,7 +331,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: teethBottom,
+                        children: teethBottomLeft.reversed.toList() +
+                            teethBottomRight,
                       ),
                     ),
                   ),
@@ -530,7 +386,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     );
   }
 
-  Future showTeethDialog(Tooth tooth) => showDialog(
+  void showTeethDialog(Tooth tooth) => showDialog(
         barrierDismissible: false,
         context: context,
         builder: (context) => Dialog(
@@ -630,6 +486,29 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                         ),
                       )
                     : Container(),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ToothHistoryScreen(
+                          tooth: tooth,
+                          scale: scale,
+                          patient: patient,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "Tooth History",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontSize: 18,
+                      fontFamily: "Calibri",
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
                 const Spacer(),
                 TextButton(
                   onPressed: () async {
@@ -640,8 +519,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                       },
                     });
 
+                    await reloadTeethMap();
                     Navigator.pop(context);
-                    reloadTeethMap();
                   },
                   child: const Text(
                     "Done",

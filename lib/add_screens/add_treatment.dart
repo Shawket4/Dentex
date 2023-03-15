@@ -1,17 +1,26 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:clinic_management/dio_helper.dart';
-import 'package:clinic_management/main.dart';
-import 'package:clinic_management/screens/home_screen.dart';
+import 'package:dentex/dio_helper.dart';
+import 'package:dentex/main.dart';
+import 'package:dentex/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:lottie/lottie.dart';
 
-class AddTreatmentScreen extends StatelessWidget {
+class AddTreatmentScreen extends StatefulWidget {
   const AddTreatmentScreen({super.key});
+
+  @override
+  State<AddTreatmentScreen> createState() => _AddTreatmentScreenState();
+}
+
+class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
+  TextEditingController name = TextEditingController();
+  TextEditingController price = TextEditingController();
+  Color selectedColor = Colors.black;
   @override
   Widget build(BuildContext context) {
-    TextEditingController name = TextEditingController();
-    TextEditingController price = TextEditingController();
+    // TextEditingController hexColor = TextEditingController();
     price.text = "0.0";
     BuildContext dialogContext = context;
     return Scaffold(
@@ -75,6 +84,98 @@ class AddTreatmentScreen extends StatelessWidget {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              children: <Widget>[
+                Container(
+                  height: 40,
+                  width: MediaQuery.of(context).size.width - 70,
+                  decoration: BoxDecoration(
+                    color: selectedColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Dialog(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "Pick Condition Color",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                ColorPicker(
+                                    pickerColor: selectedColor,
+                                    showLabel: false,
+                                    enableAlpha: false,
+                                    onColorChanged: (color) {
+                                      setState(() {
+                                        selectedColor = color;
+                                      });
+                                    }),
+                                Center(
+                                  child: TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        Navigator.pop(context);
+                                      });
+                                    },
+                                    child: const Text(
+                                      "Close",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          );
+                        });
+                  },
+                  icon: Icon(
+                    Icons.brush,
+                    color: selectedColor,
+                  ),
+                )
+              ],
+            ),
+          ),
+          // Container(
+          //   padding: const EdgeInsets.all(10),
+          //   child: TextField(
+          //     autocorrect: false,
+          //     keyboardType:
+          //         const TextInputType.numberWithOptions(decimal: true),
+          //     controller: hexColor,
+          //     decoration: const InputDecoration(
+          //       focusedBorder: OutlineInputBorder(
+          //         borderSide: BorderSide(
+          //           color: Color(0xFF011627),
+          //           width: 2.0,
+          //         ),
+          //       ),
+          //       border: OutlineInputBorder(),
+          //       labelText: 'Hex Color',
+          //       labelStyle: TextStyle(
+          //         color: Color(0xFF011627),
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Container(
             height: 50,
             padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -117,6 +218,7 @@ class AddTreatmentScreen extends StatelessWidget {
                         "$ServerIP/api/protected/RegisterTreatment", {
                       "treatment_name": name.text,
                       "treatment_price": double.parse(price.text),
+                      "hex_color": HexColor(selectedColor).toHex(),
                     }).timeout(const Duration(seconds: 5));
 
                     if (response["message"] == "Registered Successfully") {

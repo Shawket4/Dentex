@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:clinic_management/dio_helper.dart';
+import 'package:dentex/dio_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 

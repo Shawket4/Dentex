@@ -3,8 +3,8 @@ package Middleware
 import (
 	"net/http"
 
-	"github.com/Shawket4/ClinicManagement/Models"
-	"github.com/Shawket4/ClinicManagement/Utils/Token"
+	"github.com/Shawket4/Dentex/Models"
+	"github.com/Shawket4/Dentex/Utils/Token"
 	"github.com/gin-gonic/gin"
 )
 

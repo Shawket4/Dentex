@@ -1,4 +1,4 @@
-module github.com/Shawket4/ClinicManagement
+module github.com/Shawket4/Dentex
 
 go 1.20
 

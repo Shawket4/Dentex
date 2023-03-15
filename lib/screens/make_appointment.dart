@@ -1,10 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:clinic_management/dio_helper.dart';
-import 'package:clinic_management/main.dart';
-import 'package:clinic_management/models/patient.dart';
-import 'package:clinic_management/models/time_block.dart';
-import 'package:clinic_management/screens/home_screen.dart';
+import 'package:dentex/dio_helper.dart';
+import 'package:dentex/main.dart';
+import 'package:dentex/models/patient.dart';
+import 'package:dentex/models/time_block.dart';
+import 'package:dentex/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:intl/intl.dart' as intl;
@@ -423,6 +423,7 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                           "treatment": widget.tooth.condition.name,
                           "price": widget.tooth.condition.price,
                           "tooth_id": widget.tooth.id,
+                          "hex_color": widget.tooth.condition.color!.toHex(),
                         }).timeout(const Duration(seconds: 5));
 
                         if (response["message"] == "Registered Successfully") {

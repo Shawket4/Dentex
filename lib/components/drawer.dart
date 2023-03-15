@@ -1,15 +1,15 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:clinic_management/add_screens/add_doctor_screen.dart';
-import 'package:clinic_management/add_screens/add_patient.dart';
-import 'package:clinic_management/add_screens/add_treatment.dart';
-import 'package:clinic_management/components/bottom_nav_bar.dart';
-import 'package:clinic_management/components/rive_controller.dart';
-import 'package:clinic_management/main.dart';
-import 'package:clinic_management/screens/doctor_patients.dart';
-import 'package:clinic_management/screens/favourites_screen.dart';
-import 'package:clinic_management/screens/home_screen.dart';
-import 'package:clinic_management/screens/search_screen.dart';
+import 'package:dentex/add_screens/add_doctor_screen.dart';
+import 'package:dentex/add_screens/add_patient.dart';
+import 'package:dentex/add_screens/add_treatment.dart';
+import 'package:dentex/components/bottom_nav_bar.dart';
+import 'package:dentex/components/rive_controller.dart';
+import 'package:dentex/main.dart';
+import 'package:dentex/screens/doctor_patients.dart';
+import 'package:dentex/screens/favourites_screen.dart';
+import 'package:dentex/screens/home_screen.dart';
+import 'package:dentex/screens/search_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
@@ -130,7 +130,7 @@ class _SideMenuState extends State<SideMenu> {
                     ),
                   ),
                   userInfo.permission == 2
-                      ? buildMenuItem("Add Doctor", const AddDoctorScreen(), 3)
+                      ? buildMenuItem("Add Doctor", const AddDoctorScreen(), 4)
                       : Container(),
                   userInfo.permission == 1
                       ? buildMenuItem(

@@ -1,11 +1,10 @@
 // ignore_for_file: unused_local_variable, non_constant_identifier_names
-import 'package:clinic_management/components/drawer.dart';
-import 'package:clinic_management/components/rive_controller.dart';
-import 'package:clinic_management/screens/dashboard_screen.dart';
-import 'package:clinic_management/screens/doctor_patients.dart';
-import 'package:clinic_management/screens/favourites_screen.dart';
-import 'package:clinic_management/screens/home_screen.dart';
-import 'package:clinic_management/screens/search_screen.dart';
+import 'package:dentex/components/drawer.dart';
+import 'package:dentex/components/rive_controller.dart';
+import 'package:dentex/screens/doctor_patients.dart';
+import 'package:dentex/screens/favourites_screen.dart';
+import 'package:dentex/screens/home_screen.dart';
+import 'package:dentex/screens/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 
@@ -83,38 +82,6 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
 }
 
 // Widget CustomNavigationBar(BuildContext context) {}
-
-Widget loadScreen(Function openDrawer) {
-  switch (selectedIndex) {
-    case 0:
-      return DashboardScreen(
-        openDrawer: openDrawer,
-      );
-    case 1:
-      return SearchScreen(
-        openDrawer: openDrawer,
-      );
-    case 2:
-      return DoctorPatientScreen(
-        openDrawer: openDrawer,
-      );
-    case 3:
-      return FavouriteScreen(
-        openDrawer: openDrawer,
-      );
-    // case 3:
-    //   return Placeholder();
-    // case 4:
-    //   return Placeholder();
-    // case 5:
-    //   return Placeholder();
-    // case 6:
-    //   return Placeholder();
-  }
-  return DashboardScreen(
-    openDrawer: openDrawer,
-  );
-}
 
 void loadBottomItems(Function openDrawer) {
   bottomItems = [

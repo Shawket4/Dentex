@@ -5,7 +5,7 @@ import (
 	"html"
 	"strings"
 
-	"github.com/Shawket4/ClinicManagement/Utils/Token"
+	"github.com/Shawket4/Dentex/Utils/Token"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )

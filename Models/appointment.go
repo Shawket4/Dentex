@@ -13,6 +13,7 @@ type Appointment struct {
 	PatientName string  `json:"patient_name" gorm:"-"`
 	Treatment   string  `json:"treatment"`
 	Price       float64 `json:"price"`
+	HexColor    string  `json:"hex_color"`
 	IsCompleted bool    `json:"is_completed"`
 	IsPaid      bool    `json:"is_paid"`
 	ToothID     uint    `json:"tooth_id"`

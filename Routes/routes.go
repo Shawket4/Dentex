@@ -1,8 +1,8 @@
 package Routes
 
 import (
-	"github.com/Shawket4/ClinicManagement/Controllers"
-	"github.com/Shawket4/ClinicManagement/Middleware"
+	"github.com/Shawket4/Dentex/Controllers"
+	"github.com/Shawket4/Dentex/Middleware"
 	"github.com/gin-gonic/gin"
 )
 

@@ -1,3 +1,6 @@
+import 'package:dentex/main.dart';
+import 'package:flutter/material.dart';
+
 class Patient {
   int id = 0;
   int doctorID = 0;
@@ -12,10 +15,8 @@ class Patient {
 class Condition {
   String? name = "None";
   double? price = 0.0;
-  Condition({
-    this.name,
-    this.price,
-  });
+  Color? color;
+  Condition({this.name, this.price, this.color});
 }
 
 class Tooth {
@@ -28,6 +29,7 @@ class Tooth {
         "tooth_code": toothCode,
         "condition": condition.name,
         "is_treated": isTreated,
+        "hex_color": HexColor(condition.color!).toHex(),
       };
 }
 
@@ -35,7 +37,9 @@ class TeethMap {
   List<Tooth> teeth = [];
   List<Map<String, dynamic>> toJSON() {
     List<Map<String, dynamic>> jsonOutput = [];
+    teeth.sort((a, b) => a.toothCode.compareTo(b.toothCode));
     for (var tooth in teeth) {
+      // print(tooth.toothCode + ":" + tooth.condition.name!);
       jsonOutput.add(tooth.toJSON());
     }
     return jsonOutput;
