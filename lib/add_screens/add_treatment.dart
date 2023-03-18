@@ -39,7 +39,7 @@ class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
       body: ListView(
         children: [
           const SizedBox(
-            height: 50,
+            height: 20,
           ),
           Container(
             padding: const EdgeInsets.all(10),

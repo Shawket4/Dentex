@@ -1,11 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
+import 'package:dentex/add_screens/add_prescription.dart';
 import 'package:dentex/components/app_bar.dart';
 import 'package:dentex/components/image_manipulation.dart';
 import 'package:dentex/components/rive_controller.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/main.dart';
 import 'package:dentex/models/patient.dart';
+import 'package:dentex/models/prescription.dart';
 import 'package:dentex/screens/make_appointment.dart';
+import 'package:dentex/screens/patient_prescriptions.dart';
 import 'package:dentex/screens/tooth_history_screen.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -51,76 +54,140 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     teethTopRight = [];
     for (var tooth in teethMap.teeth) {
       if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "L") {
-        final imageBytes = await returnColoredTooth(
-            "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
-            tooth.condition.color!);
-        teethBottomLeft.add(
-          GestureDetector(
-            onTap: () {
-              showTeethDialog(tooth);
-            },
-            child: Image.memory(
-              imageBytes,
-              scale: scale!,
+        if (tooth.condition.name != "None") {
+          final imageBytes = await returnColoredTooth(
+              "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              tooth.condition.color!);
+          teethBottomLeft.add(
+            GestureDetector(
+              onTap: () {
+                showTeethDialog(tooth);
+              },
+              child: Image.memory(
+                imageBytes,
+                scale: scale!,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          teethBottomLeft.add(
+            GestureDetector(
+              onTap: () {
+                showTeethDialog(tooth);
+              },
+              child: Image.asset(
+                "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                scale: scale!,
+              ),
+            ),
+          );
+        }
       }
       if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "R") {
-        final imageBytes = await returnColoredTooth(
-            "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
-            tooth.condition.color!);
-        teethBottomRight.add(
-          GestureDetector(
-            onTap: () {
-              showTeethDialog(tooth);
-            },
-            child: Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.rotationY(math.pi),
-              child: Image.memory(
-                imageBytes,
-                scale: scale!,
+        if (tooth.condition.name != "None") {
+          final imageBytes = await returnColoredTooth(
+              "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              tooth.condition.color!);
+          teethBottomRight.add(
+            GestureDetector(
+              onTap: () {
+                showTeethDialog(tooth);
+              },
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(math.pi),
+                child: Image.memory(
+                  imageBytes,
+                  scale: scale!,
+                ),
               ),
             ),
-          ),
-        );
+          );
+        } else {
+          teethBottomRight.add(
+            GestureDetector(
+              onTap: () {
+                showTeethDialog(tooth);
+              },
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(math.pi),
+                child: Image.asset(
+                  "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                  scale: scale!,
+                ),
+              ),
+            ),
+          );
+        }
       }
       if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "L") {
-        final imageBytes = await returnColoredTooth(
-            "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
-            tooth.condition.color!);
-        teethTopLeft.add(
-          GestureDetector(
-            onTap: () {
-              showTeethDialog(tooth);
-            },
-            child: Image.memory(
-              imageBytes,
-              scale: scale!,
-            ),
-          ),
-        );
-      }
-      if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
-        final imageBytes = await returnColoredTooth(
-            "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
-            tooth.condition.color!);
-        teethTopRight.add(
-          GestureDetector(
-            onTap: () {
-              showTeethDialog(tooth);
-            },
-            child: Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.rotationY(math.pi),
+        if (tooth.condition.name != "None") {
+          final imageBytes = await returnColoredTooth(
+              "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              tooth.condition.color!);
+          teethTopLeft.add(
+            GestureDetector(
+              onTap: () {
+                showTeethDialog(tooth);
+              },
               child: Image.memory(
                 imageBytes,
                 scale: scale!,
               ),
             ),
-          ),
-        );
+          );
+        } else {
+          teethTopLeft.add(
+            GestureDetector(
+              onTap: () {
+                showTeethDialog(tooth);
+              },
+              child: Image.asset(
+                "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                scale: scale!,
+              ),
+            ),
+          );
+        }
+      }
+      if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
+        if (tooth.condition.name != "None") {
+          final imageBytes = await returnColoredTooth(
+              "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              tooth.condition.color!);
+          teethTopRight.add(
+            GestureDetector(
+              onTap: () {
+                showTeethDialog(tooth);
+              },
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(math.pi),
+                child: Image.memory(
+                  imageBytes,
+                  scale: scale!,
+                ),
+              ),
+            ),
+          );
+        } else {
+          teethTopRight.add(
+            GestureDetector(
+              onTap: () {
+                showTeethDialog(tooth);
+              },
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(math.pi),
+                child: Image.asset(
+                  "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                  scale: scale!,
+                ),
+              ),
+            ),
+          );
+        }
       }
     }
     setState(() {});
@@ -376,6 +443,40 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  const SizedBox(height: 30),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PatientPrescriptionScreen(
+                            patient: patient,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Text(
+                            "Prescriptions",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 5,
+                          ),
+                          Icon(
+                            Icons.description_rounded,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -453,10 +554,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     enabled: true,
                     items: conditions.map((e) => e.name.toString()).toList(),
                     selectedItem: tooth.condition.name,
-                    onChanged: (item) => setState(() {
-                      tooth.condition = conditions
-                          .firstWhere((element) => element.name == item);
-                    }),
+                    onChanged: (item) => tooth.condition = conditions
+                        .firstWhere((element) => element.name == item),
                   ),
                 ),
                 // const SizedBox(

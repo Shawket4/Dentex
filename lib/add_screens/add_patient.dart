@@ -48,7 +48,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
         child: ListView(
           children: <Widget>[
             const SizedBox(
-              height: 50,
+              height: 20,
             ),
             Container(
               padding: const EdgeInsets.all(10),
