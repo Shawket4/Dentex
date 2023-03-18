@@ -13,6 +13,8 @@ func ConfigRoutes(router *gin.Engine) {
 	authorized.Use(Middleware.JwtAuthMiddleware())
 	authorized.GET("/user", Controllers.CurrentUser)
 	authorized.POST("/RegisterPatient", Controllers.RegisterPatient)
+	authorized.POST("/RegisterPrescription", Controllers.RegisterPrescription)
+	authorized.POST("/GetPatientPrescriptions", Controllers.GetPatientPrescriptions)
 	authorized.POST("/RegisterAppointment", Controllers.RegisterAppointment)
 	authorized.POST("/RegisterTreatment", Controllers.RegisterTreatment)
 	authorized.POST("/EditTreatment", Controllers.EditTreatment)

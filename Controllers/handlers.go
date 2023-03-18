@@ -52,6 +52,55 @@ func RegisterDoctor(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
 }
 
+func RegisterPrescription(c *gin.Context) {
+	var input struct {
+		PatientID         uint   `json:"patient_id"`
+		Date              string `json:"date"`
+		PrescriptionItems []struct {
+			Name  string `json:"name"`
+			Notes string `json:"notes"`
+		} `json:"prescription_items"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	var prescription Models.Prescription
+	prescription.PatientID = input.PatientID
+	prescription.Date = input.Date
+	for _, o := range input.PrescriptionItems {
+		var prescriptionItem Models.PrescriptionItem
+		prescriptionItem.Name = o.Name
+		prescriptionItem.Notes = o.Notes
+		prescription.PrescriptionItems = append(prescription.PrescriptionItems, prescriptionItem)
+	}
+	if err := Models.DB.Model(&Models.Prescription{}).Create(&prescription).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
+}
+
+func GetPatientPrescriptions(c *gin.Context) {
+	var input struct {
+		PatientID uint `json:"patient_id"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	var prescriptions []Models.Prescription
+	if err := Models.DB.Model(&Models.Prescription{}).Where("patient_id = ?", input.PatientID).Preload("PrescriptionItems").Find(&prescriptions).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, prescriptions)
+}
+
 // func GetDoctorWorkingHours(c *gin.Context) {
 // 	user_id, err := Token.ExtractTokenID(c)
 
