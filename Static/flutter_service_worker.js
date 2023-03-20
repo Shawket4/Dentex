@@ -4,10 +4,9 @@ const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 const RESOURCES = {
   "version.json": "1c4727dbe35c8970107ccb5995770164",
-"index.html": "7138a67d259c5fd4eae41ee197e937cf",
-"/": "7138a67d259c5fd4eae41ee197e937cf",
-"main.dart.js": "947cc9d93f6eeedfef1fd93a8145ce29",
-"flutter.js": "1cfe996e845b3a8a33f57607e8b09ee4",
+"index.html": "d14395104dd5af92f2a8150d2fb22f3c",
+"/": "d14395104dd5af92f2a8150d2fb22f3c",
+"main.dart.js": "64db730d359bc60ed332808d43b70e3d",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796",
 "icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
@@ -63,11 +62,7 @@ const RESOURCES = {
 "assets/assets/fonts/Inter-Bold.ttf": "275bfea5dc74c33f51916fee80feae67",
 "assets/assets/fonts/Inter-ExtraBold.ttf": "c9709fb8e32755490795ce5bd226c3a0",
 "assets/assets/fonts/Inter%2520Normal.ttf": "ba8d154465f7fd15e2fc2ced6dceec90",
-"assets/assets/fonts/Iowan%2520Old%2520Style.ttf": "4aff88a6ebaf4eb3596d41fd3ffed96b",
-"canvaskit/canvaskit.js": "97937cb4c2c2073c968525a3e08c86a3",
-"canvaskit/profiling/canvaskit.js": "c21852696bc1cc82e8894d851c01921a",
-"canvaskit/profiling/canvaskit.wasm": "371bc4e204443b0d5e774d64a046eb99",
-"canvaskit/canvaskit.wasm": "3de12d898ec208a5f31362cc00f09b9e"
+"assets/assets/fonts/Iowan%2520Old%2520Style.ttf": "4aff88a6ebaf4eb3596d41fd3ffed96b"
 };
 
 // The application shell files that are downloaded before a service worker can
