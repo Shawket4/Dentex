@@ -10,6 +10,7 @@ type Appointment struct {
 	TimeBlockID uint
 	DoctorID    uint    `json:"doctor_id"`
 	PatientID   uint    `json:"patient_id"`
+	ConditionID uint    `json:"condition_id"`
 	PatientName string  `json:"patient_name" gorm:"-"`
 	Treatment   string  `json:"treatment"`
 	Price       float64 `json:"price"`

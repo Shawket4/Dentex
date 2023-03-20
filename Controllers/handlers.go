@@ -217,8 +217,17 @@ func RegisterAppointment(c *gin.Context) {
 	}
 	if user.Permission != 2 {
 		appointment.DoctorID = doctor.ID
-
 	}
+	var treatment Models.Treatment
+
+	if err := Models.DB.Model(&Models.Treatment{}).Where("id = ?", appointment.ConditionID).Select("name", "price", "hex_color").Find(&treatment).Error; err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	appointment.Treatment = treatment.Name
+	appointment.Price = treatment.Price
+	appointment.HexColor = treatment.HexColor
 	if err := Models.DB.Model(&Models.Schedule{}).Where("doctor_id = ?", doctor.ID).Preload("TimeBlocks").Find(&doctor.Schedule).Error; err != nil {
 		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
 		c.Abort()
@@ -302,9 +311,11 @@ func ChangeAppointmentCompletionStatus(c *gin.Context) {
 			return
 		}
 
-		if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", tooth.ID).Update("condition", "None").Error; err != nil {
+		// if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", tooth.ID).Updates(map[string]string{"condition": "None", "hex_color": "#ffffffff"}).Error; err != nil {
+		if err := Models.DB.Model(&tooth).Updates(map[string]interface{}{"condition": "None", "hex_color": "#ffffffff"}).Error; err != nil {
 			c.String(http.StatusBadRequest, "Couldn't Update Tooth")
 			c.Abort()
+			log.Println(err)
 			return
 		}
 
@@ -763,10 +774,41 @@ func GetPatientTeethMap(c *gin.Context) {
 	if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", input.PatientID).Preload("PatientTeethMap").Find(&patient).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
+		return
 	}
 	if err := Models.DB.Model(&Models.TeethMap{}).Where("id = ?", patient.PatientTeethMap.ID).Preload("Teeth").Find(&patient.PatientTeethMap).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	for index, tooth := range patient.PatientTeethMap.Teeth {
+		var tooth_appointments []Models.Appointment
+		var uncompleted_appointments []Models.Appointment
+		if err := Models.DB.Model(&Models.Appointment{}).Where("tooth_id = ?", tooth.ID).Find(&tooth_appointments).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+		for _, appointment := range tooth_appointments {
+			if !appointment.IsCompleted {
+				if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Select("tooth_code").Find(&appointment.ToothCode).Error; err != nil {
+					log.Println(err)
+					c.JSON(http.StatusInternalServerError, err)
+					return
+				}
+
+				if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", appointment.PatientID).Select("name").Find(&appointment.PatientName).Error; err != nil {
+					log.Println(err)
+					c.JSON(http.StatusInternalServerError, err)
+					return
+				}
+
+				uncompleted_appointments = append(uncompleted_appointments, appointment)
+
+				fmt.Println(uncompleted_appointments)
+			}
+		}
+		patient.PatientTeethMap.Teeth[index].UncompletedAppointments = uncompleted_appointments
 	}
 	c.JSON(http.StatusOK, patient.PatientTeethMap)
 }
@@ -827,27 +869,26 @@ func GetToothHistory(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	for i, s := range tooth.ToothHistory {
-		fmt.Println(s)
-		var patientName string
-		if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", s.PatientID).Select("name").Find(&patientName).Error; err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, err)
-			return
+	var toothHistory []Models.Appointment
+	for _, s := range tooth.ToothHistory {
+		if s.IsCompleted {
+			var patientName string
+			if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", s.PatientID).Select("name").Find(&patientName).Error; err != nil {
+				log.Println(err)
+				c.JSON(http.StatusInternalServerError, err)
+				return
+			}
+			var toothCode string
+			if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", s.ToothID).Select("tooth_code").Find(&toothCode).Error; err != nil {
+				log.Println(err)
+				c.JSON(http.StatusInternalServerError, err)
+				return
+			}
+			s.PatientName = patientName
+			s.ToothCode = toothCode
+			toothHistory = append(toothHistory, s)
 		}
-		var toothCode string
-		if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", s.ToothID).Select("tooth_code").Find(&toothCode).Error; err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, err)
-			return
-		}
-		tooth.ToothHistory[i].PatientName = patientName
-		tooth.ToothHistory[i].ToothCode = toothCode
 	}
+	tooth.ToothHistory = toothHistory
 	c.JSON(http.StatusOK, tooth)
-	// var appointments []Models.Appointment
-	// for _, appointment := range tooth.ToothHistory {
-
-	// }
-
 }

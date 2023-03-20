@@ -41,4 +41,5 @@ func ConfigRoutes(router *gin.Engine) {
 	adminRoutes.GET("/GetAllPatients", Controllers.GetAllPatients)
 	adminRoutes.GET("/GetAllDoctors", Controllers.GetAllDoctors)
 	router.Static("/Web", "./Static")
+	router.Static("/Welcome", "./Welcome")
 }

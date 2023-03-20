@@ -26,27 +26,29 @@ type TeethMap struct {
 
 type Tooth struct {
 	gorm.Model
-	ToothCode    string `json:"tooth_code"`
-	TeethMapID   uint
-	Condition    string `json:"condition"`
-	IsTreated    bool   `json:"is_treated"`
-	ToothHistory []Appointment
-	HexColor     string `json:"hex_color"`
+	ToothCode               string `json:"tooth_code"`
+	TeethMapID              uint
+	Condition               string        `json:"condition"`
+	ConditionID             uint          `json:"condition_id"`
+	IsTreated               bool          `json:"is_treated"`
+	ToothHistory            []Appointment `json:"tooth_history"`
+	UncompletedAppointments []Appointment `json:"uncompleted_appointments" gorm:"-"`
+	HexColor                string        `json:"hex_color"`
 }
 
 func CreatePatientTeethMap(patient Patient) TeethMap {
 	var teethMap = patient.PatientTeethMap
 	for i := 1; i <= 8; i++ {
-		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("LB%v", i), teethMap.ID, "None", false, nil, ""})
+		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("LB%v", i), teethMap.ID, "None", 0, false, nil, nil, ""})
 	}
 	for i := 1; i <= 8; i++ {
-		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("LT%v", i), teethMap.ID, "None", false, nil, ""})
+		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("LT%v", i), teethMap.ID, "None", 0, false, nil, nil, ""})
 	}
 	for i := 1; i <= 8; i++ {
-		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("RB%v", i), teethMap.ID, "None", false, nil, ""})
+		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("RB%v", i), teethMap.ID, "None", 0, false, nil, nil, ""})
 	}
 	for i := 1; i <= 8; i++ {
-		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("RT%v", i), teethMap.ID, "None", false, nil, ""})
+		teethMap.Teeth = append(teethMap.Teeth, Tooth{gorm.Model{}, fmt.Sprintf("RT%v", i), teethMap.ID, "None", 0, false, nil, nil, ""})
 	}
 	return teethMap
 }

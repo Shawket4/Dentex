@@ -23,8 +23,22 @@ func CurrentUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "success", "data": user})
+	var output struct {
+		Username   string `json:"username"`
+		ClinicName string `json:"clinic_name"`
+		Permission int    `json:"permission"`
+	}
+	if user.Permission == 1 {
+		var doctor Models.Doctor
+		if err := Models.DB.Model(&Models.Doctor{}).Where("user_id = ?", user.ID).Find(&doctor).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		output.ClinicName = doctor.ClinicName
+	}
+	output.Username = user.Username
+	output.Permission = user.Permission
+	c.JSON(http.StatusOK, gin.H{"message": "success", "data": output})
 }
 
 type LoginInput struct {
