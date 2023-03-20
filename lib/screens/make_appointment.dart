@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/main.dart';
@@ -253,6 +253,7 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
     //   } catch (e) {}
     // }
     isWorkingHoursLoaded = true;
+    print(widget.tooth.condition.id);
     return "";
   }
 
@@ -420,10 +421,11 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                               .format(finalDateTime),
                           "doctor_id": widget.patient.doctorID,
                           "patient_id": widget.patient.id,
-                          "treatment": widget.tooth.condition.name,
-                          "price": widget.tooth.condition.price,
+                          "condition_id": widget.tooth.condition.id,
+                          // "treatment": widget.tooth.condition.name,
+                          // "price": widget.tooth.condition.price,
                           "tooth_id": widget.tooth.id,
-                          "hex_color": widget.tooth.condition.color!.toHex(),
+                          // "hex_color": widget.tooth.condition.color!.toHex(),
                         }).timeout(const Duration(seconds: 5));
 
                         if (response["message"] == "Registered Successfully") {

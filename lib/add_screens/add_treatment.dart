@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/main.dart';
 import 'package:dentex/screens/home_screen.dart';
@@ -17,11 +16,39 @@ class AddTreatmentScreen extends StatefulWidget {
 class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
   TextEditingController name = TextEditingController();
   TextEditingController price = TextEditingController();
+
   Color selectedColor = Colors.black;
+  List<Color> colors = [
+    Colors.red,
+    Colors.pink,
+    Colors.purple,
+    Colors.deepPurple,
+    Colors.indigo,
+    Colors.blue,
+    Colors.lightBlue,
+    Colors.cyan,
+    Colors.teal,
+    Colors.green,
+    Colors.lightGreen,
+    Colors.lime,
+    Colors.yellow,
+    Colors.amber,
+    Colors.orange,
+    Colors.deepOrange,
+    Colors.brown,
+    Colors.grey,
+    Colors.blueGrey,
+    Colors.black,
+  ];
+  @override
+  void initState() {
+    price.text = "0.0";
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     // TextEditingController hexColor = TextEditingController();
-    price.text = "0.0";
     BuildContext dialogContext = context;
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F9),
@@ -118,6 +145,7 @@ class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
                                 ),
                                 ColorPicker(
                                     pickerColor: selectedColor,
+                                    // ignore: deprecated_member_use
                                     showLabel: false,
                                     enableAlpha: false,
                                     onColorChanged: (color) {
@@ -140,7 +168,33 @@ class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
                                       ),
                                     ),
                                   ),
-                                )
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return Dialog(
+                                              child: BlockPicker(
+                                                  pickerColor: selectedColor,
+                                                  availableColors: colors,
+                                                  onColorChanged: (color) {
+                                                    setState(() {
+                                                      selectedColor = color;
+                                                      Navigator.pop(context);
+                                                    });
+                                                  }),
+                                            );
+                                          });
+                                    },
+                                    child: const Text(
+                                      "Presets",
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   const CustomAppBar({
@@ -29,9 +30,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
       leading: widget.leading,
       title: Text(
         widget.title,
-        style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
+        style: GoogleFonts.jost(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

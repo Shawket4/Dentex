@@ -1,4 +1,5 @@
 import 'package:dentex/main.dart';
+import 'package:dentex/models/appointment.dart';
 import 'package:flutter/material.dart';
 
 class Patient {
@@ -13,10 +14,11 @@ class Patient {
 }
 
 class Condition {
+  int? id = 0;
   String? name = "None";
   double? price = 0.0;
   Color? color;
-  Condition({this.name, this.price, this.color});
+  Condition({this.id, this.name, this.price, this.color});
 }
 
 class Tooth {
@@ -24,10 +26,12 @@ class Tooth {
   String toothCode = "";
   Condition condition = Condition();
   bool isTreated = false;
+  List<Appointment> uncompletedAppointments = [];
   Map<String, dynamic> toJSON() => {
         "id": id,
         "tooth_code": toothCode,
         "condition": condition.name,
+        "condition_id": condition.id,
         "is_treated": isTreated,
         "hex_color": HexColor(condition.color!).toHex(),
       };

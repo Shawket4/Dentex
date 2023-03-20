@@ -12,6 +12,7 @@ import 'package:dentex/screens/home_screen.dart';
 import 'package:dentex/screens/search_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:rive/rive.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -75,7 +76,7 @@ class _SideMenuState extends State<SideMenu> {
                             selectedSideItem = sideItems[index];
                             bottomItems[index].input!.change(true);
                             sideItems[index].input!.change(true);
-                            Future.delayed(const Duration(milliseconds: 500),
+                            Future.delayed(const Duration(milliseconds: 350),
                                 () {
                               bottomItems[index].input!.change(false);
                               sideItems[index].input!.change(false);
@@ -113,11 +114,10 @@ class _SideMenuState extends State<SideMenu> {
                                     ),
                                     Text(
                                       bottomItems[index].title,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontFamily: "Calibri",
+                                      style: GoogleFonts.jost(
+                                        fontSize: 22,
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFFFDFFFC),
+                                        color: const Color(0xFFFDFFFC),
                                       ),
                                     ),
                                   ],
@@ -149,7 +149,7 @@ class _SideMenuState extends State<SideMenu> {
               child: ListTile(
                 leading: const CircleAvatar(
                   backgroundColor: Colors.white24,
-                  radius: 23,
+                  radius: 30,
                   child: Icon(
                     CupertinoIcons.person,
                     color: Colors.white,
@@ -157,22 +157,21 @@ class _SideMenuState extends State<SideMenu> {
                 ),
                 title: Text(
                   userInfo.username,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    overflow: TextOverflow.ellipsis,
-                    fontFamily: "Calibri",
+                  style: GoogleFonts.jost(
+                    fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFFFDFFFC),
+                    color: const Color(0xFFFDFFFC),
                   ),
                 ),
                 subtitle: Text(
-                  userInfo.permission == 1 ? "Doctor" : "Admin",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    overflow: TextOverflow.ellipsis,
-                    fontFamily: "Calibri",
+                  userInfo.permission == 1 ? userInfo.clinicName! : "Admin",
+                  style: GoogleFonts.jost(
+                    fontSize: 20,
+                    textStyle: const TextStyle(
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFFFDFFFC),
+                    color: const Color(0xFFFDFFFC),
                   ),
                 ),
               ),
@@ -201,7 +200,7 @@ class _SideMenuState extends State<SideMenu> {
           onTap: () {
             widget.update();
             selectedSideItem = sideItems[index];
-            Future.delayed(const Duration(milliseconds: 500), () {
+            Future.delayed(const Duration(milliseconds: 350), () {
               widget.closeDrawer();
               selectedSideItem = sideItems[selectedIndex];
               Navigator.push(
@@ -217,23 +216,6 @@ class _SideMenuState extends State<SideMenu> {
                 alignment: Alignment.centerLeft,
                 child: Row(
                   children: [
-                    // SizedBox(
-                    //   width: 40,
-                    //   height: 40,
-                    //   child: RiveAnimation.asset(
-                    //     sideItems[index].file,
-                    //     artboard: sideItems[index].artboard,
-                    //     alignment: Alignment.centerLeft,
-                    //     onInit: (artboard) {
-                    //       StateMachineController controller = getRiveController(
-                    //         artboard,
-                    //         sideItems[index].stateMachineName,
-                    //       );
-                    //       sideItems[index].input =
-                    //           controller.findSMI(sideItems[index].smi) as SMIBool;
-                    //     },
-                    //   ),
-                    // ),
                     const SizedBox(
                       width: 40,
                       height: 40,
@@ -247,11 +229,10 @@ class _SideMenuState extends State<SideMenu> {
                     ),
                     Text(
                       label,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontFamily: "Calibri",
+                      style: GoogleFonts.jost(
+                        fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFFDFFFC),
+                        color: const Color(0xFFFDFFFC),
                       ),
                     ),
                   ],

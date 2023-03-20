@@ -50,6 +50,7 @@ dependencies:
   flutter_colorpicker: ^1.0.3
   pdf: ^3.9.0
   printing: ^5.10.1
+  google_fonts: ^4.0.3
 
 dev_dependencies:
   flutter_test:

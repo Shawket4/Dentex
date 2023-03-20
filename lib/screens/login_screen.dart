@@ -1,5 +1,6 @@
-// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously, unused_import, deprecated_member_use
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:dentex/screens/home_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -124,10 +125,13 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           );
                         });
-                    var response = await dio.post("$ServerIP/api/login", data: {
-                      "username": usernameController.text,
-                      "password": passwordController.text
-                    });
+                    var response = await dio.post(
+                      "$ServerIP/api/login",
+                      data: {
+                        "username": usernameController.text,
+                        "password": passwordController.text
+                      },
+                    );
                     var message = response.data["message"];
                     if (message == "Login Successful") {
                       var jwt = response.data["jwt"];

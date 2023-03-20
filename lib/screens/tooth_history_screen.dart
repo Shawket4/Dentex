@@ -34,29 +34,30 @@ class _ToothHistoryScreenState extends State<ToothHistoryScreen> {
       var response = await postData("$ServerIP/api/protected/GetToothHistory", {
         "tooth_id": widget.tooth.id,
       });
+      if (response["tooth_history"] != null) {
+        for (var obj in response["tooth_history"]) {
+          Appointment appointment = Appointment();
+          appointment.id = obj["ID"];
+          appointment.date =
+              intl.DateFormat("yyyy/MM/dd & h:mm a").parse(obj["date"]);
+          appointment.patientID = obj["patient_id"];
+          appointment.toothID = obj["tooth_id"];
+          appointment.patientName = obj["patient_name"];
+          appointment.toothCode = obj["tooth_code"];
+          appointment.condition.name = obj["treatment"];
 
-      for (var obj in response["ToothHistory"]) {
-        Appointment appointment = Appointment();
-        appointment.id = obj["ID"];
-        appointment.date =
-            intl.DateFormat("yyyy/MM/dd & h:mm a").parse(obj["date"]);
-        appointment.patientID = obj["patient_id"];
-        appointment.toothID = obj["tooth_id"];
-        appointment.patientName = obj["patient_name"];
-        appointment.toothCode = obj["tooth_code"];
-        appointment.condition.name = obj["treatment"];
-
-        appointment.condition.color = obj["hex_color"] == ""
-            ? Colors.white
-            : HexColor.fromHex(obj["hex_color"]);
-        appointment.price = double.parse(obj["price"].toString());
-        appointment.isPaid = obj["is_paid"];
-        appointment.isCompleted = obj["is_completed"];
-        final imageBytes = await returnColoredTooth(
-            "assets/images/teeth/${widget.tooth.toothCode[1]}${int.parse(widget.tooth.toothCode[2])}${appointment.condition.name != "None" ? "_Colored" : ""}.png",
-            appointment.condition.color!);
-        imagesBytes.add(imageBytes);
-        toothAppointments.add(appointment);
+          appointment.condition.color = obj["hex_color"] == ""
+              ? Colors.white
+              : HexColor.fromHex(obj["hex_color"]);
+          appointment.price = double.parse(obj["price"].toString());
+          appointment.isPaid = obj["is_paid"];
+          appointment.isCompleted = obj["is_completed"];
+          final imageBytes = await returnColoredTooth(
+              "assets/images/teeth/${widget.tooth.toothCode[1]}${int.parse(widget.tooth.toothCode[2])}${appointment.condition.name != "None" ? "_Colored" : ""}.png",
+              appointment.condition.color!);
+          imagesBytes.add(imageBytes);
+          toothAppointments.add(appointment);
+        }
       }
       isLoaded = true;
     }

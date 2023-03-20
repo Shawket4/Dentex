@@ -1,6 +1,8 @@
+import 'package:dentex/main.dart';
 import 'package:dentex/models/patient.dart';
 import 'package:dentex/models/prescription.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
 
@@ -15,35 +17,54 @@ Future<Uint8List> makePrescriptionPdf(
     Page(
       build: (context) {
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Date: ${prescription.date}",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "Patient Name: ${patient.name}",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                Text(
+                  "Doctor: ${userInfo.username}",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.normal,
+                    // color: PdfColor(0, 1, 1),
+                  ),
+                ),
+                Text(
+                  "${userInfo.clinicName}",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    // color: PdfColor(1, 1, 1),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Date: ${prescription.date}",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 SizedBox(
                   child: Image(imageLogo),
                   width: 225,
                   height: 225,
-                ),
+                )
               ],
+            ),
+            SizedBox(height: 30),
+            Text(
+              "Patient Name: ${patient.name}",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             SizedBox(height: 30),
             Table(

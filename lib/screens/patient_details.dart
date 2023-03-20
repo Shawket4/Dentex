@@ -1,20 +1,21 @@
 // ignore_for_file: use_build_context_synchronously
-import 'package:dentex/add_screens/add_prescription.dart';
 import 'package:dentex/components/app_bar.dart';
 import 'package:dentex/components/image_manipulation.dart';
 import 'package:dentex/components/rive_controller.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/main.dart';
+import 'package:dentex/models/appointment.dart';
 import 'package:dentex/models/patient.dart';
-import 'package:dentex/models/prescription.dart';
 import 'package:dentex/screens/make_appointment.dart';
 import 'package:dentex/screens/patient_prescriptions.dart';
 import 'package:dentex/screens/tooth_history_screen.dart';
+import 'package:dentex/screens/uncompleted_appointments_screen.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'dart:math' as math;
 import 'package:rive/rive.dart';
+import 'package:intl/intl.dart' as intl;
+import 'dart:math' as math;
 
 class PatientDetailScreen extends StatefulWidget {
   const PatientDetailScreen({super.key, required this.patientID});
@@ -200,6 +201,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           await getData("$ServerIP/api/protected/GetDoctorTreatments");
       for (var obj in treatmentsResponse) {
         Condition condition = Condition();
+        condition.id = obj["ID"];
         condition.name = obj["name"];
         condition.price = double.parse(obj["price"].toString());
         condition.color = obj["hex_color"] == ""
@@ -232,83 +234,174 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         tooth.id = obj["ID"];
         tooth.toothCode = obj["tooth_code"];
         tooth.condition.name = obj["condition"];
+        tooth.condition.id = obj["condition_id"];
+        // print(obj["uncompleted_appointments"].length);
 
         tooth.condition.color = obj["hex_color"] == ""
             ? Colors.white
             : HexColor.fromHex(obj["hex_color"]);
+        if (obj["uncompleted_appointments"] != null) {
+          for (var appointmentJSON in obj["uncompleted_appointments"]) {
+            Appointment appointment = Appointment();
+            appointment.id = appointmentJSON["ID"];
+            appointment.date = intl.DateFormat("yyyy/MM/dd & h:mm a")
+                .parse(appointmentJSON["date"]);
+            appointment.patientID = appointmentJSON["patient_id"];
+            appointment.patientName = appointmentJSON["patient_name"];
+            appointment.price =
+                double.parse(appointmentJSON["price"].toString());
+            appointment.condition.color = appointmentJSON["hex_color"] == ""
+                ? Colors.white
+                : HexColor.fromHex(appointmentJSON["hex_color"]);
+            appointment.isCompleted = false;
+            appointment.isPaid = appointmentJSON["is_paid"];
+            appointment.toothID = appointmentJSON["tooth_id"];
+            appointment.toothCode = appointmentJSON["tooth_code"];
+            appointment.condition.name = appointmentJSON["treatment"];
+            tooth.uncompletedAppointments.add(appointment);
+          }
+
+          tooth.condition.color = Colors.grey;
+        }
+
         tooth.isTreated = obj["is_treated"];
         teethMap.teeth.add(tooth);
         if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "L") {
-          final imageBytes = await returnColoredTooth(
-              "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
-              tooth.condition.color!);
-          teethBottomLeft.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
-              },
-              child: Image.memory(
-                imageBytes,
-                scale: scale!,
+          if (tooth.condition.color != Colors.white) {
+            final imageBytes = await returnColoredTooth(
+              "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}_Colored.png",
+              tooth.condition.color!,
+            );
+            teethBottomLeft.add(
+              GestureDetector(
+                onTap: () {
+                  showTeethDialog(tooth);
+                },
+                child: Image.memory(
+                  imageBytes,
+                  scale: scale!,
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            teethBottomLeft.add(
+              GestureDetector(
+                onTap: () {
+                  showTeethDialog(tooth);
+                },
+                child: Image.asset(
+                  "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                  scale: scale!,
+                ),
+              ),
+            );
+          }
         }
         if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "R") {
-          final imageBytes = await returnColoredTooth(
-              "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
-              tooth.condition.color!);
-          teethBottomRight.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
-              },
-              child: Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.rotationY(math.pi),
-                child: Image.memory(
-                  imageBytes,
-                  scale: scale!,
+          if (tooth.condition.color != Colors.white) {
+            final imageBytes = await returnColoredTooth(
+                "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                tooth.condition.color!);
+            teethBottomRight.add(
+              GestureDetector(
+                onTap: () {
+                  showTeethDialog(tooth);
+                },
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(math.pi),
+                  child: Image.memory(
+                    imageBytes,
+                    scale: scale!,
+                  ),
                 ),
               ),
-            ),
-          );
+            );
+          } else {
+            teethBottomRight.add(
+              GestureDetector(
+                onTap: () {
+                  showTeethDialog(tooth);
+                },
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(math.pi),
+                  child: Image.asset(
+                    "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                    scale: scale!,
+                  ),
+                ),
+              ),
+            );
+          }
         }
         if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "L") {
-          final imageBytes = await returnColoredTooth(
-              "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
-              tooth.condition.color!);
-          teethTopLeft.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
-              },
-              child: Image.memory(
-                imageBytes,
-                scale: scale!,
-              ),
-            ),
-          );
-        }
-        if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
-          final imageBytes = await returnColoredTooth(
-              "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
-              tooth.condition.color!);
-          teethTopRight.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
-              },
-              child: Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.rotationY(math.pi),
+          if (tooth.condition.color != Colors.white) {
+            final imageBytes = await returnColoredTooth(
+                "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                tooth.condition.color!);
+            teethTopLeft.add(
+              GestureDetector(
+                onTap: () {
+                  showTeethDialog(tooth);
+                },
                 child: Image.memory(
                   imageBytes,
                   scale: scale!,
                 ),
               ),
-            ),
-          );
+            );
+          } else {
+            teethTopLeft.add(
+              GestureDetector(
+                onTap: () {
+                  showTeethDialog(tooth);
+                },
+                child: Image.asset(
+                  "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                  scale: scale!,
+                ),
+              ),
+            );
+          }
+        }
+        if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
+          if (tooth.condition.color != Colors.white) {
+            final imageBytes = await returnColoredTooth(
+                "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                tooth.condition.color!);
+            teethTopRight.add(
+              GestureDetector(
+                onTap: () {
+                  showTeethDialog(tooth);
+                },
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(math.pi),
+                  child: Image.memory(
+                    imageBytes,
+                    scale: scale!,
+                  ),
+                ),
+              ),
+            );
+          } else {
+            teethTopRight.add(
+              GestureDetector(
+                onTap: () {
+                  showTeethDialog(tooth);
+                },
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(math.pi),
+                  child: Image.asset(
+                    "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                    scale: scale!,
+                  ),
+                ),
+              ),
+            );
+          }
         }
       }
       isMapLoaded = true;
@@ -487,156 +580,180 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     );
   }
 
-  void showTeethDialog(Tooth tooth) => showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (context) => Dialog(
-          child: SizedBox(
-            width: 300,
-            height: 300,
-            child: Column(
-              children: <Widget>[
-                const SizedBox(
-                  height: 10,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: DropdownSearch<String>(
-                    dropdownSearchTextAlign: TextAlign.left,
-                    searchFieldProps: const TextFieldProps(
-                      autocorrect: false,
-                      cursorColor: Color(0xFF0b132b),
-                    ),
-                    popupItemBuilder: (context, item, isSelected) => SizedBox(
-                      height: 50,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Row(
-                            children: [
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: Text(
-                                    item,
-                                    style: TextStyle(
-                                      color: isSelected
-                                          ? const Color(0xFF5bc0be)
-                                          : const Color(0xFF0b132b),
-                                      fontSize: 17,
-                                    ),
+  void showTeethDialog(Tooth tooth) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => Dialog(
+        child: SizedBox(
+          width: 300,
+          height: 300,
+          child: Column(
+            children: <Widget>[
+              const SizedBox(
+                height: 10,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: DropdownSearch<String>(
+                  dropdownSearchTextAlign: TextAlign.left,
+                  searchFieldProps: const TextFieldProps(
+                    autocorrect: false,
+                    cursorColor: Color(0xFF0b132b),
+                  ),
+                  popupItemBuilder: (context, item, isSelected) => SizedBox(
+                    height: 50,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Text(
+                                  item,
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? const Color(0xFF5bc0be)
+                                        : const Color(0xFF0b132b),
+                                    fontSize: 17,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    dropdownSearchDecoration: const InputDecoration(
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Color(0xFF0b132b),
-                          width: 2.0,
-                        ),
-                      ),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(),
-                      ),
-                      labelText: "Case Treatment*",
-                      labelStyle: TextStyle(
-                        color: Color(0xFF0b132b),
-                      ),
-                    ),
-                    mode: Mode.MENU,
-                    showSelectedItems: true,
-                    showSearchBox: false,
-                    enabled: true,
-                    items: conditions.map((e) => e.name.toString()).toList(),
-                    selectedItem: tooth.condition.name,
-                    onChanged: (item) => tooth.condition = conditions
-                        .firstWhere((element) => element.name == item),
-                  ),
-                ),
-                // const SizedBox(
-                //   height: 20.0,
-                // ),
-                tooth.condition.name != "None"
-                    ? TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => MakeAppointmentScreen(
-                                tooth: tooth,
-                                patient: patient,
-                              ),
                             ),
-                          );
-                        },
-                        child: const Text(
-                          "Make Appointment",
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 18,
-                            fontFamily: "Calibri",
-                            fontWeight: FontWeight.w400,
-                          ),
+                          ],
                         ),
-                      )
-                    : Container(),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ToothHistoryScreen(
-                          tooth: tooth,
-                          scale: scale,
-                          patient: patient,
+                      ],
+                    ),
+                  ),
+                  dropdownSearchDecoration: const InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Color(0xFF0b132b),
+                        width: 2.0,
+                      ),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(),
+                    ),
+                    labelText: "Case Treatment*",
+                    labelStyle: TextStyle(
+                      color: Color(0xFF0b132b),
+                    ),
+                  ),
+                  mode: Mode.MENU,
+                  showSelectedItems: true,
+                  showSearchBox: true,
+                  enabled: true,
+                  items: conditions.map((e) => e.name.toString()).toList(),
+                  selectedItem: tooth.condition.name,
+                  onChanged: (item) => tooth.condition =
+                      conditions.firstWhere((element) => element.name == item),
+                ),
+              ),
+              tooth.condition.name != "None"
+                  ? TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MakeAppointmentScreen(
+                              tooth: tooth,
+                              patient: patient,
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Make Appointment",
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 18,
+                          fontFamily: "Calibri",
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                    );
-                  },
-                  child: const Text(
-                    "Tooth History",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 18,
-                      fontFamily: "Calibri",
-                      fontWeight: FontWeight.w400,
+                    )
+                  : Container(),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ToothHistoryScreen(
+                        tooth: tooth,
+                        scale: scale,
+                        patient: patient,
+                      ),
                     ),
+                  );
+                },
+                child: const Text(
+                  "Tooth History",
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 18,
+                    fontFamily: "Calibri",
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
-                const Spacer(),
-                TextButton(
-                  onPressed: () async {
-                    await postData("$ServerIP/api/protected/EditTeethMap", {
-                      "patient_id": patient.id,
-                      "patient_teeth_map": {
-                        "teeth": teethMap.toJSON(),
+              ),
+              tooth.uncompletedAppointments.isNotEmpty
+                  ? TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => UncompletedAppointmentScreen(
+                              tooth: tooth,
+                              scale: scale,
+                              patient: patient,
+                            ),
+                          ),
+                        );
                       },
-                    });
+                      child: const Text(
+                        "Uncompleted Appointments",
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 18,
+                          fontFamily: "Calibri",
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    )
+                  : Container(),
+              const Spacer(),
+              TextButton(
+                onPressed: () async {
+                  await postData("$ServerIP/api/protected/EditTeethMap", {
+                    "patient_id": patient.id,
+                    "patient_teeth_map": {
+                      "teeth": teethMap.toJSON(),
+                    },
+                  });
 
-                    await reloadTeethMap();
-                    Navigator.pop(context);
-                  },
-                  child: const Text(
-                    "Done",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 22,
-                      fontFamily: "Calibri",
-                      fontWeight: FontWeight.w500,
-                    ),
+                  await reloadTeethMap();
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  "Done",
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 22,
+                    fontFamily: "Calibri",
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                )
-              ],
-            ),
+              ),
+              const SizedBox(
+                height: 10,
+              )
+            ],
           ),
         ),
-      );
+      ),
+    );
+  }
 }

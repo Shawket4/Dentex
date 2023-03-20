@@ -38,9 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
     getData("$ServerIP/api/protected/user").then((response) {
       String userName = response["data"]["username"].toString();
       int permission = response["data"]["permission"];
-
+      String? clinicName = response["data"]["clinic_name"];
       userInfo.username = userName;
       userInfo.permission = permission;
+      userInfo.clinicName = clinicName;
     });
 
     super.initState();

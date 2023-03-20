@@ -1,12 +1,12 @@
 import 'package:flutter/services.dart';
-import 'package:image/image.dart' as UI;
+import 'package:image/image.dart' as ui;
 
 Future<Uint8List> returnColoredTooth(String imagePath, Color color) async {
   late Uint8List imageBytes;
   var data = await rootBundle.load(imagePath);
   imageBytes = data.buffer.asUint8List();
-  final image = UI.decodeImage(imageBytes);
-  final pixels = image!.getBytes(order: UI.ChannelOrder.rgba);
+  final image = ui.decodeImage(imageBytes);
+  final pixels = image!.getBytes(order: ui.ChannelOrder.rgba);
   final int length = pixels.lengthInBytes;
   for (var i = 0; i < length; i += 4) {
     ///           PIXELS
@@ -25,5 +25,5 @@ Future<Uint8List> returnColoredTooth(String imagePath, Color color) async {
       pixels[i + 2] = color.blue;
     }
   }
-  return UI.encodePng(image);
+  return ui.encodePng(image);
 }
