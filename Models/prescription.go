@@ -6,6 +6,7 @@ type Prescription struct {
 	gorm.Model
 	PrescriptionItems []PrescriptionItem `json:"prescription_items"`
 	PatientID         uint               `json:"patient_id"`
+	DoctorID          uint               `json:"doctor_id"`
 	Date              string             `json:"date"`
 }
 

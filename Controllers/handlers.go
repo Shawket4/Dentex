@@ -66,7 +66,29 @@ func RegisterPrescription(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+
+	var doctor Models.Doctor
+	if err := Models.DB.Model(&Models.Doctor{}).Where("user_id = ?", user.ID).Find(&doctor).Error; err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
 	var prescription Models.Prescription
+	prescription.DoctorID = doctor.ID
 	prescription.PatientID = input.PatientID
 	prescription.Date = input.Date
 	for _, o := range input.PrescriptionItems {
@@ -255,6 +277,7 @@ func RegisterAppointment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
 }
 
@@ -651,12 +674,16 @@ func Search(c *gin.Context) {
 	}
 	var allPatients []Models.Patient
 	input.Query = strings.ToLower(input.Query)
+	if input.Query == "" {
+		c.JSON(http.StatusOK, []Models.Patient{})
+		return
+	}
 	// db.Where(
 	// 	db.Where("pizza = ?", "pepperoni").Where(db.Where("size = ?", "small").Or("size = ?", "medium")),
 	//   ).Or(
 	// 	db.Where("pizza = ?", "hawaiian").Where("size = ?", "xlarge"),
 	//   ).Find(&Pizza{}).Statement
-	if err := Models.DB.Model(&Models.Patient{}).Where("LOWER(name) LIKE ?", "%"+input.Query+"%").Or("LOWER(address) LIKE ?", "%"+input.Query+"%").Or("LOWER(phone) LIKE ?", "%"+input.Query+"%").Find(&allPatients).Error; err != nil {
+	if err := Models.DB.Model(&Models.Patient{}).Where("LOWER(name) LIKE ?", "%"+input.Query+"%").Or("LOWER(address) LIKE ?", "%"+input.Query+"%").Or("LOWER(phone) LIKE ?", "%"+input.Query+"%").Or("age::varchar(255) = ?", input.Query).Find(&allPatients).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -698,10 +725,17 @@ func RegisterTreatment(c *gin.Context) {
 		return
 	}
 
+	var doctor Models.Doctor
+	if err := Models.DB.Model(&Models.Doctor{}).Where("user_id = ?", user.ID).Find(&doctor).Error; err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+
 	treatment.Name = input.TreatmentName
 	treatment.Price = input.TreatmentPrice
 	treatment.HexColor = input.HexColor
-	treatment.DoctorID = user.ID
+	treatment.DoctorID = doctor.ID
 
 	if err := Models.DB.Save(&treatment).Error; err != nil {
 		log.Println(err)
@@ -709,33 +743,6 @@ func RegisterTreatment(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
-}
-
-func EditTreatment(c *gin.Context) {
-	var input struct {
-		TreatmentID    uint    `json:"treatment_id"`
-		TreatmentName  string  `json:"treatment_name"`
-		TreatmentPrice float64 `json:"treatment_price"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-	var treatment Models.Treatment
-	if err := Models.DB.Model(&Models.Treatment{}).Where("id = ?", input.TreatmentID).Find(&treatment).Error; err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-	treatment.Name = input.TreatmentName
-	treatment.Price = input.TreatmentPrice
-	if err := Models.DB.Model(&Models.Treatment{}).Save(&treatment).Error; err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "Condition Updated Successfully"})
 }
 
 func GetDoctorTreatments(c *gin.Context) {
@@ -754,7 +761,13 @@ func GetDoctorTreatments(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	if err := Models.DB.Model(&Models.Treatment{}).Where("doctor_id = ?", user.ID).Find(&treatments).Error; err != nil {
+	var doctor Models.Doctor
+	if err := Models.DB.Model(&Models.Doctor{}).Where("user_id = ?", user.ID).Find(&doctor).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+	}
+
+	if err := Models.DB.Model(&Models.Treatment{}).Where("doctor_id = ?", doctor.ID).Find(&treatments).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 	}
