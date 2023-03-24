@@ -12,30 +12,40 @@ import (
 )
 
 func EditTreatment(c *gin.Context) {
-	var input struct {
-		TreatmentID    uint    `json:"treatment_id"`
-		TreatmentName  string  `json:"treatment_name"`
-		TreatmentPrice float64 `json:"treatment_price"`
-	}
+	var input Models.Treatment
 	if err := c.ShouldBindJSON(&input); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 	var treatment Models.Treatment
-	if err := Models.DB.Model(&Models.Treatment{}).Where("id = ?", input.TreatmentID).Find(&treatment).Error; err != nil {
+	if err := Models.DB.Model(&Models.Treatment{}).Where("id = ?", input.ID).Find(&treatment).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	treatment.Name = input.TreatmentName
-	treatment.Price = input.TreatmentPrice
-	if err := Models.DB.Model(&Models.Treatment{}).Save(&treatment).Error; err != nil {
+	input.DoctorID = treatment.DoctorID
+	treatment = input
+	var appointments []Models.Appointment
+	if err := Models.DB.Model(&Models.Appointment{}).Where("condition_id = ?", treatment.ID).Find(&appointments).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Condition Updated Successfully"})
+	for _, appointment := range appointments {
+		appointment.HexColor = treatment.HexColor
+		if err := Models.DB.Save(&appointment).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+	}
+	if err := Models.DB.Save(&treatment).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Updated Successfully"})
 }
 
 func EditAppointment(c *gin.Context) {
@@ -168,6 +178,69 @@ func EditAppointment(c *gin.Context) {
 		}
 	}
 	if err := Models.DB.Save(&appointment).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Updated Successfully"})
+}
+
+func EditPatient(c *gin.Context) {
+	var input Models.Patient
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	var patient Models.Patient
+
+	if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", input.ID).Preload("PatientTeethMap").Find(&patient).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	if err := Models.DB.Model(&Models.TeethMap{}).Where("id = ?", patient.PatientTeethMap.ID).Preload("Teeth").Find(&patient.PatientTeethMap).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	input.PatientTeethMap = patient.PatientTeethMap
+	input.DoctorID = patient.DoctorID
+	input.IsFavourite = patient.IsFavourite
+	patient = input
+	if err := Models.DB.Save(&patient).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Updated Successfully"})
+}
+
+func EditPrescription(c *gin.Context) {
+	var input Models.Prescription
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	var prescription Models.Prescription
+	if err := Models.DB.Model(&Models.Prescription{}).Preload("PrescriptionItems").Where("id = ?", input.ID).Find(&prescription).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	for _, item := range prescription.PrescriptionItems {
+		if err := DeletePrescriptionItemByID(item.ID); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+	}
+	input.PatientID = prescription.PatientID
+	input.DoctorID = prescription.DoctorID
+	prescription = input
+	if err := Models.DB.Save(&prescription).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, err)
 		return
