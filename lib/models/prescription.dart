@@ -1,9 +1,11 @@
 class Prescription {
+  int? id;
   int? patientID;
   String? date;
   PrescriptionItems prescriptionItems = PrescriptionItems();
   Prescription fromJSON(Map<String, dynamic> input) {
     Prescription prescription = Prescription();
+    prescription.id = input["ID"];
     prescription.patientID = input["patient_id"];
     prescription.date = input["date"];
     prescription.prescriptionItems =

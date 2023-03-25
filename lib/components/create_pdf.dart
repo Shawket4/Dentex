@@ -2,7 +2,6 @@ import 'package:dentex/main.dart';
 import 'package:dentex/models/patient.dart';
 import 'package:dentex/models/prescription.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
 
@@ -27,8 +26,7 @@ Future<Uint8List> makePrescriptionPdf(
                   "Doctor: ${userInfo.username}",
                   style: TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.normal,
-                    // color: PdfColor(0, 1, 1),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
@@ -36,7 +34,6 @@ Future<Uint8List> makePrescriptionPdf(
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    // color: PdfColor(1, 1, 1),
                   ),
                 ),
               ],
@@ -60,7 +57,7 @@ Future<Uint8List> makePrescriptionPdf(
             ),
             SizedBox(height: 30),
             Text(
-              "Patient Name: ${patient.name}",
+              "Patient: ${patient.name}",
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

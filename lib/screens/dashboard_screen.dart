@@ -56,6 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         appointment.patientName = obj["patient_name"];
         appointment.toothCode = obj["tooth_code"];
         appointment.condition.name = obj["treatment"];
+        appointment.condition.id = obj["ID"];
         appointment.condition.color = obj["hex_color"] == ""
             ? Colors.white
             : HexColor.fromHex(obj["hex_color"]);

@@ -3,19 +3,23 @@ import 'package:dentex/components/app_bar.dart';
 import 'package:dentex/components/image_manipulation.dart';
 import 'package:dentex/components/rive_controller.dart';
 import 'package:dentex/dio_helper.dart';
+import 'package:dentex/edit_screens/edit_patient.dart';
 import 'package:dentex/main.dart';
 import 'package:dentex/models/appointment.dart';
 import 'package:dentex/models/patient.dart';
+import 'package:dentex/screens/home_screen.dart';
 import 'package:dentex/screens/make_appointment.dart';
 import 'package:dentex/screens/patient_prescriptions.dart';
 import 'package:dentex/screens/tooth_history_screen.dart';
 import 'package:dentex/screens/uncompleted_appointments_screen.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:rive/rive.dart';
 import 'package:intl/intl.dart' as intl;
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 class PatientDetailScreen extends StatefulWidget {
   const PatientDetailScreen({super.key, required this.patientID});
@@ -42,6 +46,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     smi: "active",
     route: const Placeholder(),
   );
+  late BuildContext dialogContext;
   @override
   void initState() {
     isMapLoaded = false;
@@ -54,15 +59,25 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     teethTopLeft = [];
     teethTopRight = [];
     for (var tooth in teethMap.teeth) {
+      final GlobalKey key = GlobalKey();
+      if (tooth.uncompletedAppointments.isNotEmpty) {
+        tooth.condition.color = Colors.grey[600];
+      }
       if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "L") {
-        if (tooth.condition.name != "None") {
+        if (tooth.condition.color != Colors.white) {
           final imageBytes = await returnColoredTooth(
-              "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
-              tooth.condition.color!);
+            "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}_Colored.png",
+            tooth.condition.color!,
+          );
           teethBottomLeft.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
+            InkWell(
+              key: key,
+              onTap: () async {
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale!).toString(), false);
+                showTeethDialog(tooth, position);
+                //
               },
               child: Image.memory(
                 imageBytes,
@@ -72,12 +87,20 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           );
         } else {
           teethBottomLeft.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
+            InkWell(
+              key: key,
+              onTap: () async {
+                late Uint8List imageBytes;
+                var data = await rootBundle.load(
+                    "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}.png");
+                imageBytes = data.buffer.asUint8List();
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale!).toString(), false);
+                showTeethDialog(tooth, position);
               },
               child: Image.asset(
-                "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}.png",
                 scale: scale!,
               ),
             ),
@@ -85,14 +108,18 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         }
       }
       if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "R") {
-        if (tooth.condition.name != "None") {
+        if (tooth.condition.color != Colors.white) {
           final imageBytes = await returnColoredTooth(
-              "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              "assets/images/teeth/${tooth.toothCode.substring(1)}_Colored.png",
               tooth.condition.color!);
           teethBottomRight.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
+            InkWell(
+              key: key,
+              onTap: () async {
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale!).toString(), true);
+                showTeethDialog(tooth, position);
               },
               child: Transform(
                 alignment: Alignment.center,
@@ -106,15 +133,24 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           );
         } else {
           teethBottomRight.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
+            InkWell(
+              key: key,
+              onTap: () async {
+                late Uint8List imageBytes;
+                var data = await rootBundle.load(
+                  "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
+                );
+                imageBytes = data.buffer.asUint8List();
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale!).toString(), true);
+                showTeethDialog(tooth, position);
               },
               child: Transform(
                 alignment: Alignment.center,
                 transform: Matrix4.rotationY(math.pi),
                 child: Image.asset(
-                  "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                  "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
                   scale: scale!,
                 ),
               ),
@@ -123,14 +159,18 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         }
       }
       if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "L") {
-        if (tooth.condition.name != "None") {
+        if (tooth.condition.color != Colors.white) {
           final imageBytes = await returnColoredTooth(
-              "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              "assets/images/teeth/${tooth.toothCode.substring(1)}_Colored.png",
               tooth.condition.color!);
           teethTopLeft.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
+            InkWell(
+              key: key,
+              onTap: () async {
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale!).toString(), false);
+                showTeethDialog(tooth, position);
               },
               child: Image.memory(
                 imageBytes,
@@ -140,12 +180,21 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           );
         } else {
           teethTopLeft.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
+            InkWell(
+              key: key,
+              onTap: () async {
+                late Uint8List imageBytes;
+                var data = await rootBundle.load(
+                  "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
+                );
+                imageBytes = data.buffer.asUint8List();
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale!).toString(), false);
+                showTeethDialog(tooth, position);
               },
               child: Image.asset(
-                "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
                 scale: scale!,
               ),
             ),
@@ -153,14 +202,18 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         }
       }
       if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
-        if (tooth.condition.name != "None") {
+        if (tooth.condition.color != Colors.white) {
           final imageBytes = await returnColoredTooth(
-              "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+              "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}_Colored.png",
               tooth.condition.color!);
           teethTopRight.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
+            InkWell(
+              key: key,
+              onTap: () async {
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale!).toString(), true);
+                showTeethDialog(tooth, position);
               },
               child: Transform(
                 alignment: Alignment.center,
@@ -174,15 +227,24 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           );
         } else {
           teethTopRight.add(
-            GestureDetector(
-              onTap: () {
-                showTeethDialog(tooth);
+            InkWell(
+              key: key,
+              onTap: () async {
+                late Uint8List imageBytes;
+                var data = await rootBundle.load(
+                  "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}.png",
+                );
+                imageBytes = data.buffer.asUint8List();
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale!).toString(), true);
+                showTeethDialog(tooth, position);
               },
               child: Transform(
                 alignment: Alignment.center,
                 transform: Matrix4.rotationY(math.pi),
                 child: Image.asset(
-                  "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                  "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}.png",
                   scale: scale!,
                 ),
               ),
@@ -230,13 +292,12 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
       teeth.sort((a, b) => a["tooth_code"].compareTo(b["tooth_code"]));
 
       for (var obj in teeth) {
+        final GlobalKey key = GlobalKey();
         Tooth tooth = Tooth();
         tooth.id = obj["ID"];
         tooth.toothCode = obj["tooth_code"];
         tooth.condition.name = obj["condition"];
         tooth.condition.id = obj["condition_id"];
-        // print(obj["uncompleted_appointments"].length);
-
         tooth.condition.color = obj["hex_color"] == ""
             ? Colors.white
             : HexColor.fromHex(obj["hex_color"]);
@@ -258,14 +319,15 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             appointment.toothID = appointmentJSON["tooth_id"];
             appointment.toothCode = appointmentJSON["tooth_code"];
             appointment.condition.name = appointmentJSON["treatment"];
+            appointment.condition.id = appointmentJSON["ID"];
             tooth.uncompletedAppointments.add(appointment);
           }
-
-          tooth.condition.color = Colors.grey;
+          tooth.condition.color = Colors.grey[600];
         }
 
         tooth.isTreated = obj["is_treated"];
         teethMap.teeth.add(tooth);
+
         if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "L") {
           if (tooth.condition.color != Colors.white) {
             final imageBytes = await returnColoredTooth(
@@ -273,9 +335,14 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               tooth.condition.color!,
             );
             teethBottomLeft.add(
-              GestureDetector(
-                onTap: () {
-                  showTeethDialog(tooth);
+              InkWell(
+                key: key,
+                onTap: () async {
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale!).toString(), false);
+                  showTeethDialog(tooth, position);
+                  //
                 },
                 child: Image.memory(
                   imageBytes,
@@ -285,12 +352,20 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             );
           } else {
             teethBottomLeft.add(
-              GestureDetector(
-                onTap: () {
-                  showTeethDialog(tooth);
+              InkWell(
+                key: key,
+                onTap: () async {
+                  late Uint8List imageBytes;
+                  var data = await rootBundle.load(
+                      "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}.png");
+                  imageBytes = data.buffer.asUint8List();
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale!).toString(), false);
+                  showTeethDialog(tooth, position);
                 },
                 child: Image.asset(
-                  "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                  "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}.png",
                   scale: scale!,
                 ),
               ),
@@ -300,12 +375,16 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "R") {
           if (tooth.condition.color != Colors.white) {
             final imageBytes = await returnColoredTooth(
-                "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                "assets/images/teeth/${tooth.toothCode.substring(1)}_Colored.png",
                 tooth.condition.color!);
             teethBottomRight.add(
-              GestureDetector(
-                onTap: () {
-                  showTeethDialog(tooth);
+              InkWell(
+                key: key,
+                onTap: () async {
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale!).toString(), true);
+                  showTeethDialog(tooth, position);
                 },
                 child: Transform(
                   alignment: Alignment.center,
@@ -319,15 +398,24 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             );
           } else {
             teethBottomRight.add(
-              GestureDetector(
-                onTap: () {
-                  showTeethDialog(tooth);
+              InkWell(
+                key: key,
+                onTap: () async {
+                  late Uint8List imageBytes;
+                  var data = await rootBundle.load(
+                    "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
+                  );
+                  imageBytes = data.buffer.asUint8List();
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale!).toString(), true);
+                  showTeethDialog(tooth, position);
                 },
                 child: Transform(
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(math.pi),
                   child: Image.asset(
-                    "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                    "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
                     scale: scale!,
                   ),
                 ),
@@ -338,12 +426,16 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "L") {
           if (tooth.condition.color != Colors.white) {
             final imageBytes = await returnColoredTooth(
-                "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                "assets/images/teeth/${tooth.toothCode.substring(1)}_Colored.png",
                 tooth.condition.color!);
             teethTopLeft.add(
-              GestureDetector(
-                onTap: () {
-                  showTeethDialog(tooth);
+              InkWell(
+                key: key,
+                onTap: () async {
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale!).toString(), false);
+                  showTeethDialog(tooth, position);
                 },
                 child: Image.memory(
                   imageBytes,
@@ -353,12 +445,21 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             );
           } else {
             teethTopLeft.add(
-              GestureDetector(
-                onTap: () {
-                  showTeethDialog(tooth);
+              InkWell(
+                key: key,
+                onTap: () async {
+                  late Uint8List imageBytes;
+                  var data = await rootBundle.load(
+                    "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
+                  );
+                  imageBytes = data.buffer.asUint8List();
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale!).toString(), false);
+                  showTeethDialog(tooth, position);
                 },
                 child: Image.asset(
-                  "assets/images/teeth/${tooth.toothCode.substring(1)}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                  "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
                   scale: scale!,
                 ),
               ),
@@ -368,12 +469,16 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
           if (tooth.condition.color != Colors.white) {
             final imageBytes = await returnColoredTooth(
-                "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}_Colored.png",
                 tooth.condition.color!);
             teethTopRight.add(
-              GestureDetector(
-                onTap: () {
-                  showTeethDialog(tooth);
+              InkWell(
+                key: key,
+                onTap: () async {
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale!).toString(), true);
+                  showTeethDialog(tooth, position);
                 },
                 child: Transform(
                   alignment: Alignment.center,
@@ -387,15 +492,24 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             );
           } else {
             teethTopRight.add(
-              GestureDetector(
-                onTap: () {
-                  showTeethDialog(tooth);
+              InkWell(
+                key: key,
+                onTap: () async {
+                  late Uint8List imageBytes;
+                  var data = await rootBundle.load(
+                    "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}.png",
+                  );
+                  imageBytes = data.buffer.asUint8List();
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale!).toString(), true);
+                  showTeethDialog(tooth, position);
                 },
                 child: Transform(
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(math.pi),
                   child: Image.asset(
-                    "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}${tooth.condition.name != "None" ? "_Colored" : ""}.png",
+                    "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}.png",
                     scale: scale!,
                   ),
                 ),
@@ -420,7 +534,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F9),
       appBar: CustomAppBar(
-        title: "Patient: ${patient.name.split(" ").first}",
+        title: patient.name.split(" ").first,
         actions: [
           GestureDetector(
             onTap: () async {
@@ -434,22 +548,99 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               star.input!.change(false);
             },
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 10),
+              margin: const EdgeInsets.only(left: 5, right: 5, bottom: 2),
               height: 40,
               width: 40,
               child: RiveAnimation.asset(
                 star.file,
                 artboard: star.artboard,
                 onInit: (artboard) {
-                  // (artboard.fills.first.children[0].name as SolidColor)
-                  //     .colorValue = (Colors.yellow).value;
                   StateMachineController controller = getRiveController(
                     artboard,
                     star.stateMachineName,
                   );
-
                   star.input = controller.findSMI(star.smi) as SMIBool;
                 },
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditPatientScreen(patient: patient),
+                ),
+              );
+            },
+            child: const Icon(
+              Icons.edit_document,
+            ),
+          ),
+          GestureDetector(
+            onTap: () async {
+              try {
+                await postData("$ServerIP/api/protected/DeletePatient", {
+                  "id": patient.id,
+                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const HomeScreen(),
+                  ),
+                );
+              } catch (e) {
+                dialogContext = context;
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Dialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: SizedBox(
+                          height: 400,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: double.infinity,
+                                child: Center(
+                                  // Display lottie animation
+                                  child: Lottie.asset(
+                                    "assets/lottie/Error.json",
+                                    height: 300,
+                                    width: 300,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(dialogContext);
+                                },
+                                child: const Text(
+                                  "Close",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    });
+              }
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              height: 40,
+              width: 40,
+              child: const Icon(
+                Icons.delete,
+                size: 30,
+                color: Colors.red,
               ),
             ),
           ),
@@ -580,180 +771,214 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     );
   }
 
-  void showTeethDialog(Tooth tooth) {
-    showDialog(
-      barrierDismissible: false,
+  void showTeethDialog(Tooth tooth, RelativeRect position) {
+    showMenu(
       context: context,
-      builder: (context) => Dialog(
-        child: SizedBox(
-          width: 300,
-          height: 300,
-          child: Column(
-            children: <Widget>[
-              const SizedBox(
-                height: 10,
+      position: position,
+      items: [
+        PopupMenuItem(
+          value: tooth.condition.name != "None"
+              ? 'Edit Condition'
+              : 'Add Condition',
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                tooth.condition.name != "None"
+                    ? 'Edit Condition'
+                    : 'Add Condition',
               ),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: DropdownSearch<String>(
-                  dropdownSearchTextAlign: TextAlign.left,
-                  searchFieldProps: const TextFieldProps(
-                    autocorrect: false,
-                    cursorColor: Color(0xFF0b132b),
-                  ),
-                  popupItemBuilder: (context, item, isSelected) => SizedBox(
-                    height: 50,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Row(
-                          children: [
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Text(
-                                  item,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? const Color(0xFF5bc0be)
-                                        : const Color(0xFF0b132b),
-                                    fontSize: 17,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  dropdownSearchDecoration: const InputDecoration(
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xFF0b132b),
-                        width: 2.0,
-                      ),
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(),
-                    ),
-                    labelText: "Case Treatment*",
-                    labelStyle: TextStyle(
-                      color: Color(0xFF0b132b),
-                    ),
-                  ),
-                  mode: Mode.MENU,
-                  showSelectedItems: true,
-                  showSearchBox: true,
-                  enabled: true,
-                  items: conditions.map((e) => e.name.toString()).toList(),
-                  selectedItem: tooth.condition.name,
-                  onChanged: (item) => tooth.condition =
-                      conditions.firstWhere((element) => element.name == item),
-                ),
+              Icon(
+                tooth.condition.name != "None"
+                    ? Icons.edit_rounded
+                    : Icons.add_circle_rounded,
               ),
-              tooth.condition.name != "None"
-                  ? TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => MakeAppointmentScreen(
-                              tooth: tooth,
-                              patient: patient,
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        "Make Appointment",
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 18,
-                          fontFamily: "Calibri",
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    )
-                  : Container(),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ToothHistoryScreen(
-                        tooth: tooth,
-                        scale: scale,
-                        patient: patient,
-                      ),
-                    ),
-                  );
-                },
-                child: const Text(
-                  "Tooth History",
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 18,
-                    fontFamily: "Calibri",
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ),
-              tooth.uncompletedAppointments.isNotEmpty
-                  ? TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => UncompletedAppointmentScreen(
-                              tooth: tooth,
-                              scale: scale,
-                              patient: patient,
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        "Uncompleted Appointments",
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 18,
-                          fontFamily: "Calibri",
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    )
-                  : Container(),
-              const Spacer(),
-              TextButton(
-                onPressed: () async {
-                  await postData("$ServerIP/api/protected/EditTeethMap", {
-                    "patient_id": patient.id,
-                    "patient_teeth_map": {
-                      "teeth": teethMap.toJSON(),
-                    },
-                  });
-
-                  await reloadTeethMap();
-                  Navigator.pop(context);
-                },
-                child: const Text(
-                  "Done",
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 22,
-                    fontFamily: "Calibri",
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              )
             ],
           ),
         ),
+        if (tooth.condition.name != "None")
+          PopupMenuItem(
+            value: 'Make Appointment',
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                Text('Make Appointment'),
+                Icon(Icons.app_registration_rounded),
+              ],
+            ),
+          ),
+        PopupMenuItem(
+          value: 'History',
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text('History'),
+              Icon(
+                Icons.history_edu_rounded,
+              ),
+            ],
+          ),
+        ),
+        if (tooth.uncompletedAppointments.isNotEmpty)
+          PopupMenuItem(
+            value: 'Uncompleted Appointments',
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                Text('Uncompleted Appointments'),
+                Icon(
+                  Icons.alarm,
+                ),
+              ],
+            ),
+          ),
+      ],
+    ).then((value) {
+      if (value == null) return;
+      Widget? route;
+      if (value == "Add Condition" || value == "Edit Condition") {
+        showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (context) => Dialog(
+            child: SizedBox(
+              width: 250,
+              height: 250,
+              child: Column(
+                children: <Widget>[
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: DropdownSearch<String>(
+                      dropdownSearchTextAlign: TextAlign.left,
+                      searchFieldProps: const TextFieldProps(
+                        autocorrect: false,
+                        cursorColor: Color(0xFF0b132b),
+                      ),
+                      popupItemBuilder: (context, item, isSelected) => SizedBox(
+                        height: 50,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text(
+                                      item,
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? const Color(0xFF5bc0be)
+                                            : const Color(0xFF0b132b),
+                                        fontSize: 17,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      dropdownSearchDecoration: const InputDecoration(
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Color(0xFF0b132b),
+                            width: 2.0,
+                          ),
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(),
+                        ),
+                        labelText: "Case Treatment*",
+                        labelStyle: TextStyle(
+                          color: Color(0xFF0b132b),
+                        ),
+                      ),
+                      mode: Mode.MENU,
+                      showSelectedItems: true,
+                      showSearchBox: true,
+                      enabled: true,
+                      items: conditions.map((e) => e.name.toString()).toList(),
+                      selectedItem: tooth.condition.name,
+                      onChanged: (item) => tooth.condition = conditions
+                          .firstWhere((element) => element.name == item),
+                    ),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () async {
+                      await postData("$ServerIP/api/protected/EditTeethMap", {
+                        "patient_id": patient.id,
+                        "patient_teeth_map": {
+                          "teeth": teethMap.toJSON(),
+                        },
+                      });
+
+                      await reloadTeethMap();
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "Done",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 22,
+                        fontFamily: "Calibri",
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      } else if (value == "Make Appointment") {
+        route = MakeAppointmentScreen(tooth: tooth, patient: patient);
+      } else if (value == "History") {
+        route = ToothHistoryScreen(
+          tooth: tooth,
+          scale: scale,
+          patient: patient,
+        );
+      } else if (value == "Uncompleted Appointments") {
+        route = UncompletedAppointmentScreen(
+          tooth: tooth,
+          scale: scale,
+          patient: patient,
+        );
+      }
+      if (route == null) return;
+      Navigator.push(context, MaterialPageRoute(builder: (_) => route!));
+    });
+  }
+
+  RelativeRect returnImagePosition(
+      GlobalKey key, String height, bool alignRight) {
+    final dynamic button = key.currentContext!.findRenderObject();
+    final dynamic overlay = Overlay.of(context).context.findRenderObject();
+    RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        button.localToGlobal(Offset.zero, ancestor: overlay),
+        button.localToGlobal(
+          button.size.bottomRight(Offset.zero),
+          ancestor: overlay,
+        ),
       ),
+      Offset.zero & overlay.size,
     );
+    if (alignRight) {
+      return position
+          .shift(Offset(-button.size.width + 10, double.parse(height)));
+    } else {
+      return position
+          .shift(Offset(button.size.width - 10, double.parse(height)));
+    }
   }
 }

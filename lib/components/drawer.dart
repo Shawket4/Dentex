@@ -7,6 +7,7 @@ import 'package:dentex/components/bottom_nav_bar.dart';
 import 'package:dentex/components/rive_controller.dart';
 import 'package:dentex/main.dart';
 import 'package:dentex/screens/doctor_patients.dart';
+import 'package:dentex/screens/doctor_treatments.dart';
 import 'package:dentex/screens/favourites_screen.dart';
 import 'package:dentex/screens/home_screen.dart';
 import 'package:dentex/screens/search_screen.dart';
@@ -14,7 +15,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rive/rive.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class SideMenu extends StatefulWidget {
   const SideMenu({super.key, required this.update, required this.closeDrawer});
@@ -40,21 +40,24 @@ class _SideMenuState extends State<SideMenu> {
               child: Column(
                 children: [
                   const SizedBox(
-                    height: 70,
+                    height: 100,
                   ),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
-                      width: 230,
-                      child: SvgPicture.asset(
-                        "assets/images/Side_Logo.svg",
+                      width: 250,
+                      child: Image.asset(
+                        "assets/images/Logo_White.png",
                         color: Colors.white,
                       ),
                     ),
                   ),
+                  const SizedBox(
+                    height: 30,
+                  ),
                   ...List.generate(
-                    sideItems.length - 3,
+                    sideItems.length - 4,
                     (index) => Stack(
                       children: [
                         AnimatedPositioned(
@@ -134,11 +137,15 @@ class _SideMenuState extends State<SideMenu> {
                       : Container(),
                   userInfo.permission == 1
                       ? buildMenuItem(
-                          "Add Patient", const AddPatientScreen(), 4)
+                          "My Treatments", const DoctorTreatmentScreen(), 4)
                       : Container(),
                   userInfo.permission == 1
                       ? buildMenuItem(
-                          "Add Treatment", const AddTreatmentScreen(), 5)
+                          "Add Patient", const AddPatientScreen(), 5)
+                      : Container(),
+                  userInfo.permission == 1
+                      ? buildMenuItem(
+                          "Add Treatment", const AddTreatmentScreen(), 6)
                       : Container(),
                   // Spacer(),
                 ],
@@ -285,6 +292,14 @@ void loadSideItems(Function openDrawer) {
       route: FavouriteScreen(
         openDrawer: openDrawer,
       ),
+    ),
+    RiveAsset(
+      file: "assets/rive/add_icon.riv",
+      artboard: "ADD",
+      stateMachineName: "ICON_Interactivity",
+      title: "My Treatments",
+      smi: "Example",
+      route: const DoctorTreatmentScreen(),
     ),
     RiveAsset(
       file: "assets/rive/add_icon.riv",

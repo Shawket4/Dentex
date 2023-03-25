@@ -6,6 +6,7 @@ import 'package:dentex/models/patient.dart';
 import 'package:dentex/models/time_block.dart';
 import 'package:dentex/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:intl/intl.dart' as intl;
 
@@ -253,7 +254,6 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
     //   } catch (e) {}
     // }
     isWorkingHoursLoaded = true;
-    print(widget.tooth.condition.id);
     return "";
   }
 
@@ -299,15 +299,32 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
             return SingleChildScrollView(
               child: Column(
                 children: <Widget>[
+                  const SizedBox(
+                    height: 15.0,
+                  ),
                   SizedBox(
                     width: double.infinity,
-                    height: 600,
+                    height: 500,
                     child: Card(
                       color: const Color(0xFFF1F3FF),
                       elevation: 5,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                intl.DateFormat("yyyy/MM/dd")
+                                    .format(currentDate),
+                                style: GoogleFonts.jost(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                           Expanded(
                             child: GridView.builder(
                               shrinkWrap: true,
@@ -365,7 +382,7 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                             onPressed: () async {
                               DateTime? returnedDate = await showDatePicker(
                                   context: context,
-                                  initialDate: DateTime.now(),
+                                  initialDate: currentDate,
                                   firstDate: DateTime.now()
                                       .subtract(const Duration(days: 365 * 30)),
                                   lastDate: DateTime.now()
@@ -377,7 +394,7 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                               }
                             },
                             icon: const Icon(Icons.calendar_month_rounded),
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -578,14 +595,18 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Text(
                             "Save",
+                            style: GoogleFonts.jost(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 10,
                           ),
-                          Icon(
+                          const Icon(
                             Icons.save_rounded,
                             color: Colors.white,
                           ),

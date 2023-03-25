@@ -45,7 +45,7 @@ class _ToothHistoryScreenState extends State<ToothHistoryScreen> {
           appointment.patientName = obj["patient_name"];
           appointment.toothCode = obj["tooth_code"];
           appointment.condition.name = obj["treatment"];
-
+          appointment.condition.id = obj["ID"];
           appointment.condition.color = obj["hex_color"] == ""
               ? Colors.white
               : HexColor.fromHex(obj["hex_color"]);
@@ -108,7 +108,7 @@ class _ToothHistoryScreenState extends State<ToothHistoryScreen> {
                           children: [
                             ...List.generate(toothAppointments.length, (index) {
                               return Padding(
-                                padding: const EdgeInsets.all(6),
+                                padding: const EdgeInsets.all(10),
                                 child: TextButton(
                                   onPressed: () {
                                     Navigator.push(
@@ -120,15 +120,9 @@ class _ToothHistoryScreenState extends State<ToothHistoryScreen> {
                                       ),
                                     );
                                   },
-                                  child: Card(
-                                    child: SizedBox(
-                                      width: 300,
-                                      height: 300,
-                                      child: Image.memory(
-                                        imagesBytes[index],
-                                        scale: widget.scale! / 4,
-                                      ),
-                                    ),
+                                  child: Image.memory(
+                                    imagesBytes[index],
+                                    scale: widget.scale!,
                                   ),
                                 ),
                               );

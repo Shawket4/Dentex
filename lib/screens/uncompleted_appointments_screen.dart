@@ -73,7 +73,7 @@ class _UncompletedAppointmentScreenState
                       ...List.generate(
                           widget.tooth.uncompletedAppointments.length, (index) {
                         return Padding(
-                          padding: const EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(10),
                           child: TextButton(
                             onPressed: () {
                               Navigator.push(
@@ -86,15 +86,9 @@ class _UncompletedAppointmentScreenState
                                 ),
                               );
                             },
-                            child: Card(
-                              child: SizedBox(
-                                width: 300,
-                                height: 300,
-                                child: Image.memory(
-                                  imagesBytes[index],
-                                  scale: widget.scale! / 4,
-                                ),
-                              ),
+                            child: Image.memory(
+                              imagesBytes[index],
+                              scale: widget.scale!,
                             ),
                           ),
                         );

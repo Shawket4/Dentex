@@ -26,8 +26,8 @@ extension HexColor on Color {
       '${blue.toRadixString(16).padLeft(2, '0')}';
 }
 
-// const String ServerIP = "http://144.126.234.206:5505";
-const String ServerIP = "http://localhost:5505";
+const String ServerIP = "http://144.126.234.206:5505";
+// const String ServerIP = "http://localhost:5505";
 
 void main() {
   runApp(const MainWidget());
