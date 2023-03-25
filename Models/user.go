@@ -15,6 +15,7 @@ type User struct {
 	Username   string `gorm:"size:255;not null;unique" json:"username"`
 	Password   string `gorm:"size:255;not null;" json:"password"`
 	Permission int    `json:"permission"`
+	IsDemo     bool   `json:"is_demo"`
 }
 
 func GetUserByID(uid uint) (User, error) {

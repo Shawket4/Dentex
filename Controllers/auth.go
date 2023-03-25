@@ -1,11 +1,13 @@
 package Controllers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/Shawket4/Dentex/Models"
 	"github.com/Shawket4/Dentex/Utils/Token"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func CurrentUser(c *gin.Context) {
@@ -96,4 +98,42 @@ func Register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": "validated"})
+}
+
+func RegisterDemo(c *gin.Context) {
+	var input RegisterInput
+	if err := c.ShouldBindBodyWith(&input, binding.JSON); err != nil {
+		c.String(http.StatusBadRequest, "Bad Request")
+		c.Abort()
+		return
+	}
+	user := Models.User{}
+
+	user.Username = input.Username
+	user.Password = input.Password
+	user.Permission = 1
+	user.IsDemo = true
+	_, err := user.SaveUser()
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Failed To Register User")
+		c.Abort()
+		return
+	}
+	var doctor Models.Doctor
+
+	if err := c.ShouldBindBodyWith(&doctor, binding.JSON); err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	doctor.UserID = user.ID
+	doctor.Schedule = Models.Schedule{DoctorID: doctor.UserID}
+	// Models.CreateDoctorWorkingHours(&doctor)
+	if err := Models.DB.Model(&Models.Doctor{}).Create(&doctor).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
 }

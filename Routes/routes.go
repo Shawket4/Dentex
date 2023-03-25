@@ -9,6 +9,7 @@ import (
 func ConfigRoutes(router *gin.Engine) {
 	public := router.Group("/api")
 	public.POST("/login", Controllers.Login)
+	public.POST("/RegisterDemo", Controllers.RegisterDemo)
 	authorized := router.Group("/api/protected")
 	authorized.Use(Middleware.JwtAuthMiddleware())
 	authorized.GET("/user", Controllers.CurrentUser)
