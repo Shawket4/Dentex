@@ -40,6 +40,8 @@ func ConfigRoutes(router *gin.Engine) {
 	authorized.POST("/EditPatient", Middleware.CheckObjectOwnerShip("Patient"), Controllers.EditPatient)
 	authorized.POST("/EditTreatment", Middleware.CheckObjectOwnerShip("Treatment"), Controllers.EditTreatment)
 	authorized.POST("/EditPrescription", Middleware.CheckObjectOwnerShip("Prescription"), Controllers.EditPrescription)
+	authorized.POST("/RegisterBraces", Controllers.RegisterBraces)
+	authorized.POST("/RegisterBracesAppointment", Controllers.RegisterBracesAppointment)
 	// authorized.GET("/GetDoctorWorkingHours", Controllers.GetDoctorWorkingHours)
 	adminRoutes := router.Group("/api/admin")
 	adminRoutes.Use(Middleware.JwtAuthMiddleware())

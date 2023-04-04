@@ -18,6 +18,7 @@ import (
 func RegisterDoctor(c *gin.Context) {
 	var input RegisterInput
 	if err := c.ShouldBindBodyWith(&input, binding.JSON); err != nil {
+		log.Println(err)
 		c.String(http.StatusBadRequest, "Bad Request")
 		c.Abort()
 		return
@@ -30,6 +31,7 @@ func RegisterDoctor(c *gin.Context) {
 	_, err := user.SaveUser()
 
 	if err != nil {
+		log.Println(err)
 		c.String(http.StatusBadRequest, "Failed To Register User")
 		c.Abort()
 		return
@@ -168,6 +170,11 @@ func GetPatientDetails(c *gin.Context) {
 		c.Abort()
 		return
 	}
+	// if err := Models.DB.Model(&Models.Appointment{}).Where("braces_id = ?", patient.Braces.ID).Find(&patient.Braces.BracesAppointments).Error; err != nil {
+	// 	c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+	// 	c.Abort()
+	// 	return
+	// }
 	c.JSON(http.StatusOK, patient)
 }
 
@@ -240,6 +247,101 @@ func RegisterAppointment(c *gin.Context) {
 	if user.Permission != 2 {
 		appointment.DoctorID = doctor.ID
 	}
+
+	var treatment Models.Treatment
+
+	if err := Models.DB.Model(&Models.Treatment{}).Where("id = ?", appointment.ConditionID).Select("name", "price", "hex_color").Find(&treatment).Error; err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	appointment.Treatment = treatment.Name
+	appointment.HexColor = treatment.HexColor
+
+	if err := Models.DB.Model(&Models.Schedule{}).Where("doctor_id = ?", doctor.ID).Preload("TimeBlocks").Find(&doctor.Schedule).Error; err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	timeBlock, err := Models.CreateTimeBlock(doctor.Schedule, appointment)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	doctor.Schedule.TimeBlocks = append(doctor.Schedule.TimeBlocks, timeBlock)
+	if err := Models.DB.Model(&doctor.Schedule).Association("TimeBlocks").Replace(&doctor.Schedule.TimeBlocks); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	if err := Models.DB.Model(&Models.TimeBlock{}).Find(&doctor.Schedule.TimeBlocks).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	if err := Models.DB.Model(&doctor.Schedule.TimeBlocks[len(doctor.Schedule.TimeBlocks)-1]).Association("Appointment").Replace(&appointment); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
+}
+
+func RegisterBraces(c *gin.Context) {
+	var braces Models.Braces
+	if err := c.ShouldBindJSON(&braces); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	if err := Models.DB.Save(&braces).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
+}
+
+func RegisterBracesAppointment(c *gin.Context) {
+	var appointment Models.Appointment
+	if err := c.ShouldBindBodyWith(&appointment, binding.JSON); err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+
+	var doctor Models.Doctor
+	if err := Models.DB.Model(&Models.Doctor{}).Where("user_id = ?", user.ID).Preload("Schedule").Find(&doctor).Error; err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	if user.Permission != 2 {
+		appointment.DoctorID = doctor.ID
+	}
+	// var braces Models.Braces
+	// if err := Models.DB.Model(&Models.Braces{}).Where("id = ?", appointment.BracesID).Find(&braces).Error; err != nil {
+	// 	c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+	// 	c.Abort()
+	// 	return
+	// }
+
 	var treatment Models.Treatment
 
 	if err := Models.DB.Model(&Models.Treatment{}).Where("id = ?", appointment.ConditionID).Select("name", "price", "hex_color").Find(&treatment).Error; err != nil {
@@ -277,7 +379,12 @@ func RegisterAppointment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-
+	// braces.BracesAppointments = append(braces.BracesAppointments, appointment)
+	// if err := Models.DB.Save(&braces).Error; err != nil {
+	// 	log.Println(err)
+	// 	c.JSON(http.StatusBadRequest, err)
+	// 	return
+	// }
 	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
 }
 

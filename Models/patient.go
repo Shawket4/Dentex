@@ -16,6 +16,15 @@ type Patient struct {
 	Age             int      `json:"age"`
 	IsFavourite     bool     `json:"is_favourite"`
 	PatientTeethMap TeethMap `json:"patient_teeth_map"`
+	// Braces          Braces   `json:"braces"`
+}
+
+type Braces struct {
+	gorm.Model
+	PatientID          uint          `json:"patient_id"`
+	IsOn               bool          `json:"is_on"`
+	BracesAppointments []Appointment `json:"appointments"`
+	Notes              string        `json:"notes"`
 }
 
 type TeethMap struct {
