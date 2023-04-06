@@ -2,6 +2,7 @@ package Routes
 
 import (
 	"github.com/Shawket4/Dentex/Controllers"
+	"github.com/Shawket4/Dentex/Messaging"
 	"github.com/Shawket4/Dentex/Middleware"
 	"github.com/gin-gonic/gin"
 )
@@ -42,6 +43,9 @@ func ConfigRoutes(router *gin.Engine) {
 	authorized.POST("/EditPrescription", Middleware.CheckObjectOwnerShip("Prescription"), Controllers.EditPrescription)
 	authorized.POST("/RegisterBraces", Controllers.RegisterBraces)
 	authorized.POST("/RegisterBracesAppointment", Controllers.RegisterBracesAppointment)
+	authorized.POST("/LinkDeviceToken", Messaging.LinkDeviceToken)
+	authorized.POST("/UnlinkDeviceToken", Messaging.UnlinkDeviceToken)
+	// public.POST("/SendApi", Messaging.SendApi)
 	// authorized.GET("/GetDoctorWorkingHours", Controllers.GetDoctorWorkingHours)
 	adminRoutes := router.Group("/api/admin")
 	adminRoutes.Use(Middleware.JwtAuthMiddleware())

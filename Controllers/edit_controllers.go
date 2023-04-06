@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Shawket4/Dentex/Messaging"
 	"github.com/Shawket4/Dentex/Models"
 	"github.com/Shawket4/Dentex/Utils/Token"
 	"github.com/gin-gonic/gin"
@@ -182,6 +183,12 @@ func EditAppointment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
+	if err := Models.DB.Model(&Models.Patient{}).Select("name").Where("id = ?", appointment.PatientID).Find(&appointment.PatientName).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	Messaging.SendMessage(user.Tokens, "Appointment Updated", fmt.Sprintf("%s's Appointment Has Been Updated", appointment.PatientName))
 	c.JSON(http.StatusOK, gin.H{"message": "Updated Successfully"})
 }
 

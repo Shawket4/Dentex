@@ -9,6 +9,7 @@ import (
 
 	"strings"
 
+	"github.com/Shawket4/Dentex/Messaging"
 	"github.com/Shawket4/Dentex/Models"
 	"github.com/Shawket4/Dentex/Utils/Token"
 	"github.com/gin-gonic/gin"
@@ -82,7 +83,6 @@ func RegisterPrescription(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
 	var doctor Models.Doctor
 	if err := Models.DB.Model(&Models.Doctor{}).Where("user_id = ?", user.ID).Find(&doctor).Error; err != nil {
 		log.Println(err.Error())
@@ -285,7 +285,12 @@ func RegisterAppointment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-
+	if err := Models.DB.Model(&Models.Patient{}).Select("name").Where("id = ?", appointment.PatientID).Find(&appointment.PatientName).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	Messaging.SendMessage(user.Tokens, "New Appointment", fmt.Sprintf("You Have a %s Appointment For %s: %s", appointment.Treatment, appointment.PatientName, appointment.DateTime))
 	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
 }
 
@@ -537,7 +542,21 @@ func EditTeethMap(c *gin.Context) {
 	// 	c.JSON(http.StatusInternalServerError, err)
 	// 	return
 	// }
+	user_id, err := Token.ExtractTokenID(c)
 
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+		c.Abort()
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+		c.Abort()
+		return
+	}
+	Messaging.SendMessage(user.Tokens, "Teeth Map Updated", fmt.Sprintf("%s's Teeth Map Has Been Updated", patient.Name))
 	c.JSON(http.StatusOK, gin.H{"message": "Patient Updated Successfully"})
 }
 

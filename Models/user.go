@@ -12,17 +12,24 @@ import (
 
 type User struct {
 	gorm.Model
-	Username   string `gorm:"size:255;not null;unique" json:"username"`
-	Password   string `gorm:"size:255;not null;" json:"password"`
-	Permission int    `json:"permission"`
-	IsDemo     bool   `json:"is_demo"`
+	Username   string        `gorm:"size:255;not null;unique" json:"username"`
+	Password   string        `gorm:"size:255;not null;" json:"password"`
+	Permission int           `json:"permission"`
+	IsDemo     bool          `json:"is_demo"`
+	Tokens     []DeviceToken `gorm:"foreignKey:UserID"`
+}
+
+type DeviceToken struct {
+	gorm.Model
+	UserID uint
+	Value  string `json:"value"`
 }
 
 func GetUserByID(uid uint) (User, error) {
 
 	var user User
 
-	if err := DB.First(&user, uid).Error; err != nil {
+	if err := DB.Preload("Tokens").First(&user, uid).Error; err != nil {
 		return user, errors.New("User not found")
 	}
 

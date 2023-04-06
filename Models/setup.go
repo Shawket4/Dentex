@@ -48,6 +48,7 @@ func ConnectDataBase() {
 	DB.AutoMigrate(&Prescription{})
 	DB.AutoMigrate(&PrescriptionItem{})
 	DB.AutoMigrate(&Braces{})
+	DB.AutoMigrate(&DeviceToken{})
 	// DB.AutoMigrate(&DoctorWorkingHour{})
 	DB.Session(&gorm.Session{FullSaveAssociations: true})
 }
