@@ -11,4 +11,5 @@ class Appointment {
   double? price;
   bool? isPaid;
   bool? isCompleted;
+  String? notes;
 }

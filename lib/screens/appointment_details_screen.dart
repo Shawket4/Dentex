@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, prefer_const_constructors
 
 import 'package:dentex/components/app_bar.dart';
+import 'package:dentex/components/dialog.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/edit_screens/edit_appointment.dart';
 import 'package:dentex/main.dart';
@@ -21,7 +22,6 @@ class AppointmentDetailScreen extends StatefulWidget {
 }
 
 class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
-  late BuildContext dialogContext;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,47 +55,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                   ),
                 );
               } catch (e) {
-                dialogContext = context;
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: SizedBox(
-                          height: 400,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: double.infinity,
-                                child: Center(
-                                  // Display lottie animation
-                                  child: Lottie.asset(
-                                    "assets/lottie/Error.json",
-                                    height: 300,
-                                    width: 300,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(dialogContext);
-                                },
-                                child: const Text(
-                                  "Close",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    });
+                showErrorDialog(context);
               }
             },
             child: Container(
@@ -196,7 +156,17 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text(
-                "Cost: ${widget.appointment.price}",
+                "Price: ${widget.appointment.price}",
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(
+                "Notes: ${widget.appointment.notes}",
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,

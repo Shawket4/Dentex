@@ -1,21 +1,17 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:typed_data';
-
 import 'package:dentex/components/app_bar.dart';
-import 'package:dentex/components/image_manipulation.dart';
+import 'package:dentex/components/dialog.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/main.dart';
 import 'package:dentex/models/appointment.dart';
 import 'package:dentex/models/patient.dart';
 import 'package:dentex/models/time_block.dart';
-import 'package:dentex/screens/home_screen.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:intl/intl.dart' as intl;
-import 'dart:math' as math;
 
 class EditAppointmentScreen extends StatefulWidget {
   const EditAppointmentScreen({super.key, required this.appointment});
@@ -31,18 +27,10 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
   TimeBlock? selectedTimeBlock;
   TimeBlock? previousTimeBlock;
   DateTime selectedDate = DateTime.now();
-  late BuildContext dialogContext;
   DateTime currentDate = DateTime.now();
   List<Condition> conditions = [];
   Condition? selectedCondition;
-  int? selectedToothID;
-
-  List<Widget> teethTopLeft = [];
-  List<Widget> teethTopRight = [];
-  List<Widget> teethBottomLeft = [];
-  List<Widget> teethBottomRight = [];
-  double? scale;
-  // List<String> workingHours;
+  int? selectedToothID; // List<String> workingHours;
   void loadBlocks() {
     timeBlocks.clear();
     timeBlocks.add(TimeBlock(
@@ -250,173 +238,6 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
 
   dynamic timeBlockResponse;
 
-  Future loadTeeth() async {
-    teethBottomLeft = [];
-    teethBottomRight = [];
-    teethTopLeft = [];
-    teethTopRight = [];
-
-    final response =
-        await postData("$ServerIP/api/protected/GetPatientTeethMap", {
-      "patient_id": widget.appointment.patientID,
-    });
-    List<dynamic> teeth = response["teeth"];
-    teeth.sort((a, b) => a["tooth_code"].compareTo(b["tooth_code"]));
-    for (var obj in teeth) {
-      final GlobalKey key = GlobalKey();
-      Tooth tooth = Tooth();
-      tooth.id = obj["ID"];
-      tooth.toothCode = obj["tooth_code"];
-      tooth.condition.name = obj["condition"];
-      tooth.condition.id = obj["condition_id"];
-      tooth.condition.color = obj["hex_color"] == ""
-          ? Colors.white
-          : HexColor.fromHex(obj["hex_color"]);
-      if (obj["uncompleted_appointments"] != null) {
-        for (var appointmentJSON in obj["uncompleted_appointments"]) {
-          Appointment appointment = Appointment();
-          appointment.id = appointmentJSON["ID"];
-          appointment.date = intl.DateFormat("yyyy/MM/dd & h:mm a")
-              .parse(appointmentJSON["date"]);
-          appointment.patientID = appointmentJSON["patient_id"];
-          appointment.patientName = appointmentJSON["patient_name"];
-          appointment.price = double.parse(appointmentJSON["price"].toString());
-          appointment.condition.color = appointmentJSON["hex_color"] == ""
-              ? Colors.white
-              : HexColor.fromHex(appointmentJSON["hex_color"]);
-          appointment.isCompleted = false;
-          appointment.isPaid = appointmentJSON["is_paid"];
-          appointment.toothID = appointmentJSON["tooth_id"];
-          appointment.toothCode = appointmentJSON["tooth_code"];
-          appointment.condition.name = appointmentJSON["treatment"];
-          tooth.uncompletedAppointments.add(appointment);
-        }
-        tooth.condition.color = Colors.grey[600];
-      }
-      tooth.isTreated = obj["is_treated"];
-      if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "L") {
-        Uint8List? imageBytes;
-        if (tooth.id == selectedToothID) {
-          imageBytes = await returnColoredTooth(
-            "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}_Colored.png",
-            Colors.blue,
-          );
-        }
-        teethBottomLeft.add(
-          InkWell(
-            key: key,
-            onTap: () async {
-              selectedToothID = tooth.id;
-              await loadTeeth();
-              setState(() {});
-            },
-            child: imageBytes == null
-                ? Image.asset(
-                    "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}.png",
-                    scale: scale!,
-                  )
-                : Image.memory(
-                    imageBytes,
-                    scale: scale!,
-                  ),
-          ),
-        );
-      }
-      if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "R") {
-        Uint8List? imageBytes;
-        if (tooth.id == selectedToothID) {
-          imageBytes = await returnColoredTooth(
-            "assets/images/teeth/${tooth.toothCode.substring(1)}_Colored.png",
-            Colors.blue,
-          );
-        }
-        teethBottomRight.add(
-          InkWell(
-            key: key,
-            onTap: () async {
-              selectedToothID = tooth.id;
-              await loadTeeth();
-              setState(() {});
-            },
-            child: Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.rotationY(math.pi),
-              child: imageBytes == null
-                  ? Image.asset(
-                      "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
-                      scale: scale!,
-                    )
-                  : Image.memory(
-                      imageBytes,
-                      scale: scale!,
-                    ),
-            ),
-          ),
-        );
-      }
-      if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "L") {
-        Uint8List? imageBytes;
-        if (tooth.id == selectedToothID) {
-          imageBytes = await returnColoredTooth(
-            "assets/images/teeth/${tooth.toothCode.substring(1)}_Colored.png",
-            Colors.blue,
-          );
-        }
-        teethTopLeft.add(
-          InkWell(
-            key: key,
-            onTap: () async {
-              selectedToothID = tooth.id;
-              await loadTeeth();
-              setState(() {});
-            },
-            child: imageBytes == null
-                ? Image.asset(
-                    "assets/images/teeth/${tooth.toothCode.substring(1)}.png",
-                    scale: scale!,
-                  )
-                : Image.memory(
-                    imageBytes,
-                    scale: scale!,
-                  ),
-          ),
-        );
-      }
-      if (tooth.toothCode[1] == "T" && tooth.toothCode[0] == "R") {
-        Uint8List? imageBytes;
-        if (tooth.id == selectedToothID) {
-          imageBytes = await returnColoredTooth(
-            "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}_Colored.png",
-            Colors.blue,
-          );
-        }
-        teethTopRight.add(
-          InkWell(
-            key: key,
-            onTap: () async {
-              selectedToothID = tooth.id;
-              await loadTeeth();
-              setState(() {});
-            },
-            child: Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.rotationY(math.pi),
-              child: imageBytes == null
-                  ? Image.asset(
-                      "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}.png",
-                      scale: scale!,
-                    )
-                  : Image.memory(
-                      imageBytes,
-                      scale: scale!,
-                    ),
-            ),
-          ),
-        );
-      }
-    }
-  }
-
   Future<String> loadData() async {
     if (isWorkingHoursLoaded) {
       return "";
@@ -447,18 +268,16 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
     }
     selectedCondition = widget.appointment.condition;
     selectedToothID = widget.appointment.toothID;
+    notesController.text = widget.appointment.notes.toString();
+    priceController.text = widget.appointment.price.toString();
     isWorkingHoursLoaded = true;
-    await loadTeeth();
     return "";
   }
 
+  TextEditingController notesController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    scale = MediaQuery.of(context).size.shortestSide > 500
-        ? MediaQuery.of(context).size.shortestSide / 180
-        : MediaQuery.of(context).size.shortestSide > 380
-            ? MediaQuery.of(context).size.shortestSide / 38
-            : MediaQuery.of(context).size.shortestSide / 28;
     return Scaffold(
       appBar: const CustomAppBar(
         title: "Edit Appointment",
@@ -625,6 +444,49 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
                             itemCount: timeBlocks.length,
                           ),
                         ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: TextField(
+                            autocorrect: false,
+                            controller: notesController,
+                            decoration: const InputDecoration(
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0xFF011627),
+                                  width: 2.0,
+                                ),
+                              ),
+                              border: OutlineInputBorder(),
+                              labelText: 'Notes',
+                              labelStyle: TextStyle(
+                                color: Color(0xFF011627),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: TextField(
+                            autocorrect: false,
+                            controller: priceController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: const InputDecoration(
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0xFF011627),
+                                  width: 2.0,
+                                ),
+                              ),
+                              border: OutlineInputBorder(),
+                              labelText: 'Price',
+                              labelStyle: TextStyle(
+                                color: Color(0xFF011627),
+                              ),
+                            ),
+                          ),
+                        ),
                         IconButton(
                           onPressed: () async {
                             DateTime? returnedDate = await showDatePicker(
@@ -667,29 +529,7 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () async {
-                    showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (context) {
-                          dialogContext = context;
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            child: SizedBox(
-                              height: 400,
-                              width: double.infinity,
-                              child: Center(
-                                // Display lottie animation
-                                child: Lottie.asset(
-                                  "assets/lottie/Loading.json",
-                                  height: 200,
-                                  width: 200,
-                                ),
-                              ),
-                            ),
-                          );
-                        });
+                    showLoadingDialog(context);
                     try {
                       DateTime? finalDateTime = DateTime(
                         selectedDate.year,
@@ -705,153 +545,18 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
                             .format(finalDateTime),
                         "patient_id": widget.appointment.patientID,
                         "condition_id": selectedCondition!.id,
-                        // "treatment": widget.tooth.condition.name,
-                        // "price": widget.tooth.condition.price,
+                        // "treatment": widget. tooth.condition.name,
+                        "notes": notesController.text,
+                        "price": double.parse(priceController.text),
                         "tooth_id": widget.appointment.toothID,
                         // "hex_color": widget.tooth.condition.color!.toHex(),
                       }).timeout(const Duration(seconds: 5));
 
                       if (response["message"] == "Updated Successfully") {
-                        showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) {
-                              dialogContext = context;
-                              return Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                child: SizedBox(
-                                  height: 400,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: Center(
-                                          // Display lottie animation
-                                          child: Lottie.asset(
-                                            "assets/lottie/Success.json",
-                                            height: 300,
-                                            width: 300,
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            Navigator.pop(dialogContext);
-                                          });
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  const HomeScreen(),
-                                            ),
-                                          );
-                                        },
-                                        child: const Text(
-                                          "Close",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            });
-                      } else {
-                        showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) {
-                              dialogContext = context;
-                              return Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                child: SizedBox(
-                                  height: 400,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: Center(
-                                          // Display lottie animation
-                                          child: Lottie.asset(
-                                            "assets/lottie/Error.json",
-                                            height: 300,
-                                            width: 300,
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(dialogContext);
-                                          Navigator.pop(dialogContext);
-                                        },
-                                        child: const Text(
-                                          "Close",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            });
+                        showSuccessDialog(context);
                       }
                     } catch (e) {
-                      showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) {
-                            dialogContext = context;
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              child: SizedBox(
-                                height: 400,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: Center(
-                                        // Display lottie animation
-                                        child: Lottie.asset(
-                                          "assets/lottie/Error.json",
-                                          height: 300,
-                                          width: 300,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(dialogContext);
-                                        Navigator.pop(dialogContext);
-                                      },
-                                      child: const Text(
-                                        "Close",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          });
+                      showErrorDialog(context);
                     }
                   },
                   child: Padding(

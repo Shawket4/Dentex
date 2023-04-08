@@ -1,10 +1,10 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
+import 'package:dentex/components/dialog.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/main.dart';
 import 'package:dentex/models/patient.dart';
 import 'package:dentex/models/time_block.dart';
-import 'package:dentex/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
@@ -12,10 +12,13 @@ import 'package:intl/intl.dart' as intl;
 
 class MakeAppointmentScreen extends StatefulWidget {
   const MakeAppointmentScreen(
-      {super.key, required this.tooth, required this.patient});
+      {super.key,
+      required this.tooth,
+      required this.patient,
+      required this.isBraces});
   final Tooth tooth;
   final Patient patient;
-
+  final bool isBraces;
   @override
   State<MakeAppointmentScreen> createState() => MakeAppointmentScreenState();
 }
@@ -25,7 +28,6 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
   List<TimeBlock> timeBlocks = [];
   TimeBlock? selectedTimeBlock;
   DateTime selectedDate = DateTime.now();
-  late BuildContext dialogContext;
   DateTime currentDate = DateTime.now();
   // List<String> workingHours;
   void loadBlocks() {
@@ -254,9 +256,14 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
     //   } catch (e) {}
     // }
     isWorkingHoursLoaded = true;
+    if (!widget.isBraces) {
+      priceController.text = widget.tooth.condition.price.toString();
+    }
     return "";
   }
 
+  TextEditingController notesController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -378,6 +385,50 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                               itemCount: timeBlocks.length,
                             ),
                           ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: TextField(
+                              autocorrect: false,
+                              controller: notesController,
+                              decoration: const InputDecoration(
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Color(0xFF011627),
+                                    width: 2.0,
+                                  ),
+                                ),
+                                border: OutlineInputBorder(),
+                                labelText: 'Notes',
+                                labelStyle: TextStyle(
+                                  color: Color(0xFF011627),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: TextField(
+                              autocorrect: false,
+                              controller: priceController,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              decoration: const InputDecoration(
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Color(0xFF011627),
+                                    width: 2.0,
+                                  ),
+                                ),
+                                border: OutlineInputBorder(),
+                                labelText: 'Price',
+                                labelStyle: TextStyle(
+                                  color: Color(0xFF011627),
+                                ),
+                              ),
+                            ),
+                          ),
                           IconButton(
                             onPressed: () async {
                               DateTime? returnedDate = await showDatePicker(
@@ -401,29 +452,7 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) {
-                            dialogContext = context;
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              child: SizedBox(
-                                height: 400,
-                                width: double.infinity,
-                                child: Center(
-                                  // Display lottie animation
-                                  child: Lottie.asset(
-                                    "assets/lottie/Loading.json",
-                                    height: 200,
-                                    width: 200,
-                                  ),
-                                ),
-                              ),
-                            );
-                          });
+                      showLoadingDialog(context);
                       try {
                         DateTime? finalDateTime = DateTime(
                           selectedDate.year,
@@ -432,162 +461,40 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                           selectedTimeBlock!.dateTime!.hour,
                           selectedTimeBlock!.dateTime!.minute,
                         );
+                        Map<String, dynamic> data;
+                        if (widget.isBraces) {
+                          data = {
+                            "date": intl.DateFormat("yyyy/MM/dd & h:mm a")
+                                .format(finalDateTime),
+                            "doctor_id": widget.patient.doctorID,
+                            "patient_id": widget.patient.id,
+                            "is_braces": true,
+                            "braces_id": widget.patient.braces.id,
+                            "notes": notesController.text,
+                            "price": double.parse(priceController.text),
+                          };
+                        } else {
+                          data = {
+                            "date": intl.DateFormat("yyyy/MM/dd & h:mm a")
+                                .format(finalDateTime),
+                            "doctor_id": widget.patient.doctorID,
+                            "patient_id": widget.patient.id,
+                            "condition_id": widget.tooth.condition.id,
+                            "tooth_id": widget.tooth.id,
+                            "notes": notesController.text,
+                            "price": double.parse(priceController.text),
+                          };
+                        }
                         var response = await postData(
-                            "$ServerIP/api/protected/RegisterAppointment", {
-                          "date": intl.DateFormat("yyyy/MM/dd & h:mm a")
-                              .format(finalDateTime),
-                          "doctor_id": widget.patient.doctorID,
-                          "patient_id": widget.patient.id,
-                          "condition_id": widget.tooth.condition.id,
-                          // "treatment": widget.tooth.condition.name,
-                          // "price": widget.tooth.condition.price,
-                          "tooth_id": widget.tooth.id,
-                          // "hex_color": widget.tooth.condition.color!.toHex(),
-                        }).timeout(const Duration(seconds: 5));
+                                "$ServerIP/api/protected/RegisterAppointment",
+                                data)
+                            .timeout(const Duration(seconds: 5));
 
                         if (response["message"] == "Registered Successfully") {
-                          showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) {
-                                dialogContext = context;
-                                return Dialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                  child: SizedBox(
-                                    height: 400,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: Center(
-                                            // Display lottie animation
-                                            child: Lottie.asset(
-                                              "assets/lottie/Success.json",
-                                              height: 300,
-                                              width: 300,
-                                            ),
-                                          ),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              Navigator.pop(dialogContext);
-                                            });
-                                            Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const HomeScreen(),
-                                              ),
-                                            );
-                                          },
-                                          child: const Text(
-                                            "Close",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 20,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              });
-                        } else {
-                          showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) {
-                                dialogContext = context;
-                                return Dialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                  child: SizedBox(
-                                    height: 400,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: Center(
-                                            // Display lottie animation
-                                            child: Lottie.asset(
-                                              "assets/lottie/Error.json",
-                                              height: 300,
-                                              width: 300,
-                                            ),
-                                          ),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(dialogContext);
-                                            Navigator.pop(dialogContext);
-                                          },
-                                          child: const Text(
-                                            "Close",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 20,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              });
+                          showSuccessDialog(context);
                         }
                       } catch (e) {
-                        showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) {
-                              dialogContext = context;
-                              return Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                child: SizedBox(
-                                  height: 400,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: Center(
-                                          // Display lottie animation
-                                          child: Lottie.asset(
-                                            "assets/lottie/Error.json",
-                                            height: 300,
-                                            width: 300,
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(dialogContext);
-                                          Navigator.pop(dialogContext);
-                                        },
-                                        child: const Text(
-                                          "Close",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            });
+                        showErrorDialog(context);
                       }
                     },
                     child: Padding(

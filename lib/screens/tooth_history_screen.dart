@@ -52,6 +52,7 @@ class _ToothHistoryScreenState extends State<ToothHistoryScreen> {
           appointment.price = double.parse(obj["price"].toString());
           appointment.isPaid = obj["is_paid"];
           appointment.isCompleted = obj["is_completed"];
+          appointment.notes = obj["notes"];
           final imageBytes = await returnColoredTooth(
               "assets/images/teeth/${widget.tooth.toothCode[1]}${int.parse(widget.tooth.toothCode[2])}${appointment.condition.name != "None" ? "_Colored" : ""}.png",
               appointment.condition.color!);

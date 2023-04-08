@@ -1,6 +1,8 @@
 // ignore_for_file: unused_local_variable, non_constant_identifier_names, constant_identifier_names, unused_import
 import 'package:dentex/components/bottom_nav_bar.dart';
+import 'package:dentex/dio_helper.dart';
 import 'package:dentex/models/user.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:dentex/screens/home_screen.dart';
 import 'package:dentex/screens/login_screen.dart';
@@ -8,6 +10,8 @@ import 'package:dio/dio.dart';
 import 'package:material_color_generator/material_color_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 extension HexColor on Color {
   /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
@@ -29,7 +33,27 @@ extension HexColor on Color {
 const String ServerIP = "http://144.126.234.206:5505";
 // const String ServerIP = "http://localhost:5505";
 
-void main() {
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {});
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const MainWidget());
 }
 
@@ -60,6 +84,12 @@ Future<bool> SetJwt(String jwt) async {
 Dio dio = Dio();
 
 Future<bool> get Logout async {
+  await FirebaseMessaging.instance.getToken().then((token) async {
+    await postData("$ServerIP/api/protected/UnlinkDeviceToken", {
+      "token": token,
+    });
+  });
+
   final SharedPreferences prefs = await _prefs;
   return await prefs.remove("jwt");
 }

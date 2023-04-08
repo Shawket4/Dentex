@@ -30,10 +30,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Widget> appointmentWidgetsToday = [];
   double? earningsLast7Days;
   double? earningsThisMonth;
-
+  String? text;
   @override
   void initState() {
     isUserLoaded = false;
+    DateTime currentDateTime = DateTime.now();
+    if (currentDateTime.hour < 12) {
+      text = "Morning";
+    } else if (currentDateTime.hour < 18) {
+      text = "Afternoon";
+    } else {
+      text = "Evening";
+    }
     super.initState();
   }
 
@@ -56,13 +64,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         appointment.patientName = obj["patient_name"];
         appointment.toothCode = obj["tooth_code"];
         appointment.condition.name = obj["treatment"];
-        appointment.condition.id = obj["ID"];
+        appointment.condition.id = obj["condition_id"];
         appointment.condition.color = obj["hex_color"] == ""
             ? Colors.white
             : HexColor.fromHex(obj["hex_color"]);
         appointment.price = double.parse(obj["price"].toString());
         appointment.isPaid = obj["is_paid"];
         appointment.isCompleted = obj["is_completed"];
+        appointment.notes = obj["notes"];
         allAppointments.add(appointment);
 
         if (appointment.date!.year == currentDate.year &&
@@ -212,9 +221,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Good Morning, ",
-                            style: TextStyle(
+                          Text(
+                            "Good $text, ",
+                            style: const TextStyle(
                               fontWeight: FontWeight.w900,
                               fontSize: 20,
                             ),

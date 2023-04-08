@@ -1,12 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
+import 'package:dentex/components/dialog.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/main.dart';
 import 'package:dentex/models/patient.dart';
-import 'package:dentex/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lottie/lottie.dart';
 
 class EditTreatmentScreen extends StatefulWidget {
   const EditTreatmentScreen({super.key, required this.treatment});
@@ -61,7 +60,6 @@ class _EditTreatmentScreenState extends State<EditTreatmentScreen> {
   @override
   Widget build(BuildContext context) {
     // TextEditingController hexColor = TextEditingController();
-    BuildContext dialogContext = context;
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F9),
       appBar: AppBar(
@@ -268,29 +266,7 @@ class _EditTreatmentScreenState extends State<EditTreatmentScreen> {
                   ),
                 ),
                 onPressed: () async {
-                  showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) {
-                        dialogContext = context;
-                        return Dialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: SizedBox(
-                            height: 400,
-                            width: double.infinity,
-                            child: Center(
-                              // Display lottie animation
-                              child: Lottie.asset(
-                                "assets/lottie/Loading.json",
-                                height: 200,
-                                width: 200,
-                              ),
-                            ),
-                          ),
-                        );
-                      });
+                  showLoadingDialog(context);
                   try {
                     var response = await postData(
                         "$ServerIP/api/protected/EditTreatment", {
@@ -301,143 +277,10 @@ class _EditTreatmentScreenState extends State<EditTreatmentScreen> {
                     }).timeout(const Duration(seconds: 5));
 
                     if (response["message"] == "Updated Successfully") {
-                      showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) {
-                            dialogContext = context;
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              child: SizedBox(
-                                height: 400,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: Center(
-                                        // Display lottie animation
-                                        child: Lottie.asset(
-                                          "assets/lottie/Success.json",
-                                          height: 300,
-                                          width: 300,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(dialogContext);
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const HomeScreen(),
-                                          ),
-                                        );
-                                      },
-                                      child: const Text(
-                                        "Close",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          });
-                    } else {
-                      showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) {
-                            dialogContext = context;
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              child: SizedBox(
-                                height: 400,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: Center(
-                                        // Display lottie animation
-                                        child: Lottie.asset(
-                                          "assets/lottie/Error.json",
-                                          height: 300,
-                                          width: 300,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(dialogContext);
-                                        Navigator.pop(dialogContext);
-                                      },
-                                      child: const Text(
-                                        "Close",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          });
+                      showSuccessDialog(context);
                     }
                   } catch (e) {
-                    showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (context) {
-                          dialogContext = context;
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            child: SizedBox(
-                              height: 400,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: Center(
-                                      // Display lottie animation
-                                      child: Lottie.asset(
-                                        "assets/lottie/Error.json",
-                                        height: 300,
-                                        width: 300,
-                                      ),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(dialogContext);
-                                      Navigator.pop(dialogContext);
-                                    },
-                                    child: const Text(
-                                      "Close",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        });
+                    showErrorDialog(context);
                   }
                 }),
           ],

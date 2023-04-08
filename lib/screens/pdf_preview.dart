@@ -2,6 +2,7 @@
 
 import 'package:dentex/components/app_bar.dart';
 import 'package:dentex/components/create_pdf.dart';
+import 'package:dentex/components/dialog.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/edit_screens/edit_prescription.dart';
 import 'package:dentex/main.dart';
@@ -9,7 +10,6 @@ import 'package:dentex/models/patient.dart';
 import 'package:dentex/models/prescription.dart';
 import 'package:dentex/screens/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:printing/printing.dart';
 
 class PDFPreviewScreen extends StatefulWidget {
@@ -22,7 +22,6 @@ class PDFPreviewScreen extends StatefulWidget {
 }
 
 class _PDFPreviewScreenState extends State<PDFPreviewScreen> {
-  late BuildContext dialogContext;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,47 +55,7 @@ class _PDFPreviewScreenState extends State<PDFPreviewScreen> {
                   ),
                 );
               } catch (e) {
-                dialogContext = context;
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: SizedBox(
-                          height: 400,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: double.infinity,
-                                child: Center(
-                                  // Display lottie animation
-                                  child: Lottie.asset(
-                                    "assets/lottie/Error.json",
-                                    height: 300,
-                                    width: 300,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(dialogContext);
-                                },
-                                child: const Text(
-                                  "Close",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    });
+                showErrorDialog(context);
               }
             },
             child: Container(

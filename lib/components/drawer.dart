@@ -6,6 +6,7 @@ import 'package:dentex/add_screens/add_treatment.dart';
 import 'package:dentex/components/bottom_nav_bar.dart';
 import 'package:dentex/components/rive_controller.dart';
 import 'package:dentex/main.dart';
+import 'package:dentex/screens/about_app.dart';
 import 'package:dentex/screens/doctor_patients.dart';
 import 'package:dentex/screens/doctor_treatments.dart';
 import 'package:dentex/screens/favourites_screen.dart';
@@ -151,34 +152,44 @@ class _SideMenuState extends State<SideMenu> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 40),
-              child: ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: Colors.white24,
-                  radius: 30,
-                  child: Icon(
-                    CupertinoIcons.person,
-                    color: Colors.white,
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AboutPage(),
                   ),
-                ),
-                title: Text(
-                  userInfo.username,
-                  style: GoogleFonts.jost(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFFDFFFC),
-                  ),
-                ),
-                subtitle: Text(
-                  userInfo.permission == 1 ? userInfo.clinicName! : "Admin",
-                  style: GoogleFonts.jost(
-                    fontSize: 20,
-                    textStyle: const TextStyle(
-                      overflow: TextOverflow.ellipsis,
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 40),
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Colors.white24,
+                    radius: 30,
+                    child: Icon(
+                      CupertinoIcons.person,
+                      color: Colors.white,
                     ),
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFFFDFFFC),
+                  ),
+                  title: Text(
+                    userInfo.username,
+                    style: GoogleFonts.jost(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFFDFFFC),
+                    ),
+                  ),
+                  subtitle: Text(
+                    userInfo.permission == 1 ? userInfo.clinicName! : "Admin",
+                    style: GoogleFonts.jost(
+                      fontSize: 20,
+                      textStyle: const TextStyle(
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFFFDFFFC),
+                    ),
                   ),
                 ),
               ),

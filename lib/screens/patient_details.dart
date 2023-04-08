@@ -1,5 +1,6 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, no_leading_underscores_for_local_identifiers
 import 'package:dentex/components/app_bar.dart';
+import 'package:dentex/components/dialog.dart';
 import 'package:dentex/components/image_manipulation.dart';
 import 'package:dentex/components/rive_controller.dart';
 import 'package:dentex/dio_helper.dart';
@@ -32,8 +33,12 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   TeethMap teethMap = TeethMap();
   List<Widget> teethTopLeft = [];
   List<Widget> teethTopRight = [];
+  List<Widget> teethTopLateralLeft = [];
+  List<Widget> teethTopLateralRight = [];
   List<Widget> teethBottomLeft = [];
   List<Widget> teethBottomRight = [];
+  List<Widget> teethBottomLateralLeft = [];
+  List<Widget> teethBottomLateralRight = [];
   List<Condition> conditions = [];
   Patient patient = Patient();
   bool isMapLoaded = false;
@@ -46,7 +51,6 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     smi: "active",
     route: const Placeholder(),
   );
-  late BuildContext dialogContext;
   @override
   void initState() {
     isMapLoaded = false;
@@ -54,12 +58,17 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   }
 
   Future<void> reloadTeethMap() async {
-    teethBottomLeft = [];
-    teethBottomRight = [];
-    teethTopLeft = [];
-    teethTopRight = [];
+    teethBottomLeft.clear();
+    teethBottomRight.clear();
+    teethTopLeft.clear();
+    teethTopRight.clear();
+    teethBottomLateralLeft.clear();
+    teethBottomLateralRight.clear();
+    teethTopLateralLeft.clear();
+    teethTopLateralRight.clear();
     for (var tooth in teethMap.teeth) {
       final GlobalKey key = GlobalKey();
+      final GlobalKey _key = GlobalKey();
       if (tooth.uncompletedAppointments.isNotEmpty) {
         tooth.condition.color = Colors.grey[600];
       }
@@ -68,6 +77,26 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           final imageBytes = await returnColoredTooth(
             "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}_Colored.png",
             tooth.condition.color!,
+          );
+          final imageBytesLateral = await returnColoredTooth(
+            "assets/images/teeth/Lateral_${tooth.toothCode[2]}_Colored.png",
+            tooth.condition.color!,
+          );
+          teethBottomLateralLeft.add(
+            InkWell(
+              key: _key,
+              onTap: () async {
+                ui.Image image = await decodeImageFromList(imageBytesLateral);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale! * 1.5).toString(), false);
+                showTeethDialog(tooth, position);
+                //
+              },
+              child: Image.memory(
+                imageBytesLateral,
+                scale: scale! / 1.5,
+              ),
+            ),
           );
           teethBottomLeft.add(
             InkWell(
@@ -86,6 +115,27 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             ),
           );
         } else {
+          teethBottomLateralLeft.add(
+            InkWell(
+              key: _key,
+              onTap: () async {
+                late Uint8List imageBytes;
+                var data = await rootBundle.load(
+                  "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                );
+                imageBytes = data.buffer.asUint8List();
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale!).toString(), false);
+                showTeethDialog(tooth, position);
+                //
+              },
+              child: Image.asset(
+                "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                scale: scale! / 1.5,
+              ),
+            ),
+          );
           teethBottomLeft.add(
             InkWell(
               key: key,
@@ -112,6 +162,29 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           final imageBytes = await returnColoredTooth(
               "assets/images/teeth/${tooth.toothCode.substring(1)}_Colored.png",
               tooth.condition.color!);
+          final imageBytesLateral = await returnColoredTooth(
+            "assets/images/teeth/Lateral_${tooth.toothCode[2]}_Colored.png",
+            tooth.condition.color!,
+          );
+          teethBottomLateralRight.add(
+            InkWell(
+              key: _key,
+              onTap: () async {
+                ui.Image image = await decodeImageFromList(imageBytesLateral);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale! * 1.5).toString(), true);
+                showTeethDialog(tooth, position);
+              },
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(math.pi),
+                child: Image.memory(
+                  imageBytesLateral,
+                  scale: scale! / 1.5,
+                ),
+              ),
+            ),
+          );
           teethBottomRight.add(
             InkWell(
               key: key,
@@ -132,6 +205,30 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             ),
           );
         } else {
+          teethBottomLateralRight.add(
+            InkWell(
+              key: _key,
+              onTap: () async {
+                late Uint8List imageBytes;
+                var data = await rootBundle.load(
+                  "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                );
+                imageBytes = data.buffer.asUint8List();
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale!).toString(), true);
+                showTeethDialog(tooth, position);
+              },
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(math.pi),
+                child: Image.asset(
+                  "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                  scale: scale! / 1.5,
+                ),
+              ),
+            ),
+          );
           teethBottomRight.add(
             InkWell(
               key: key,
@@ -163,6 +260,25 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           final imageBytes = await returnColoredTooth(
               "assets/images/teeth/${tooth.toothCode.substring(1)}_Colored.png",
               tooth.condition.color!);
+          final imageBytesLateral = await returnColoredTooth(
+            "assets/images/teeth/Lateral_${tooth.toothCode[2]}_Colored.png",
+            tooth.condition.color!,
+          );
+          teethTopLateralLeft.add(
+            InkWell(
+              key: _key,
+              onTap: () async {
+                ui.Image image = await decodeImageFromList(imageBytesLateral);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale! * 1.5).toString(), false);
+                showTeethDialog(tooth, position);
+              },
+              child: Image.memory(
+                imageBytesLateral,
+                scale: scale! / 1.5,
+              ),
+            ),
+          );
           teethTopLeft.add(
             InkWell(
               key: key,
@@ -179,6 +295,26 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             ),
           );
         } else {
+          teethTopLateralLeft.add(
+            InkWell(
+              key: _key,
+              onTap: () async {
+                late Uint8List imageBytes;
+                var data = await rootBundle.load(
+                  "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                );
+                imageBytes = data.buffer.asUint8List();
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale! * 1.5).toString(), false);
+                showTeethDialog(tooth, position);
+              },
+              child: Image.asset(
+                "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                scale: scale! / 1.5,
+              ),
+            ),
+          );
           teethTopLeft.add(
             InkWell(
               key: key,
@@ -206,6 +342,29 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           final imageBytes = await returnColoredTooth(
               "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}_Colored.png",
               tooth.condition.color!);
+          final imageBytesLateral = await returnColoredTooth(
+            "assets/images/teeth/Lateral_${tooth.toothCode[2]}_Colored.png",
+            tooth.condition.color!,
+          );
+          teethTopLateralRight.add(
+            InkWell(
+              key: _key,
+              onTap: () async {
+                ui.Image image = await decodeImageFromList(imageBytesLateral);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale! * 1.5).toString(), true);
+                showTeethDialog(tooth, position);
+              },
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(math.pi),
+                child: Image.memory(
+                  imageBytesLateral,
+                  scale: scale! / 1.5,
+                ),
+              ),
+            ),
+          );
           teethTopRight.add(
             InkWell(
               key: key,
@@ -226,6 +385,30 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             ),
           );
         } else {
+          teethTopLateralRight.add(
+            InkWell(
+              key: _key,
+              onTap: () async {
+                late Uint8List imageBytes;
+                var data = await rootBundle.load(
+                  "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                );
+                imageBytes = data.buffer.asUint8List();
+                ui.Image image = await decodeImageFromList(imageBytes);
+                RelativeRect position = returnImagePosition(
+                    key, (image.height / scale! * 1.5).toString(), true);
+                showTeethDialog(tooth, position);
+              },
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(math.pi),
+                child: Image.asset(
+                  "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                  scale: scale! / 1.5,
+                ),
+              ),
+            ),
+          );
           teethTopRight.add(
             InkWell(
               key: key,
@@ -271,11 +454,11 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             : HexColor.fromHex(obj["hex_color"]);
         conditions.add(condition);
       }
-
       var userResponse =
           await postData("$ServerIP/api/protected/GetPatientDetails", {
         "patient_id": widget.patientID,
       });
+
       patient.id = userResponse["ID"];
       patient.doctorID = userResponse["doctor_id"];
       patient.name = userResponse["name"];
@@ -284,20 +467,53 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
       patient.gender = userResponse["gender"];
       patient.age = userResponse["age"];
       patient.isFavourite = userResponse["is_favourite"];
+      // patient.braces.notes = userResponse["braces"]["notes"];
+      // patient.braces.id = userResponse["braces"]["ID"];
+      // patient.braces.patientID = patient.id;
+      // if (userResponse["braces"]["appointments"] != null) {
+      //   for (var obj in userResponse["braces"]["appointments"]) {
+      //     Appointment appointment = Appointment();
+      //     appointment.id = obj["ID"];
+      //     appointment.date =
+      //         intl.DateFormat("yyyy/MM/dd & h:mm a").parse(obj["date"]);
+      //     appointment.patientID = obj["patient_id"];
+      //     appointment.toothID = obj["tooth_id"];
+      //     appointment.patientName = obj["patient_name"];
+      //     appointment.toothCode = obj["tooth_code"];
+      //     appointment.condition.name = obj["treatment"];
+      //     appointment.condition.id = obj["ID"];
+      //     appointment.condition.color = obj["hex_color"] == ""
+      //         ? Colors.white
+      //         : HexColor.fromHex(obj["hex_color"]);
+      //     appointment.price = double.parse(obj["price"].toString());
+      //     appointment.isPaid = obj["is_paid"];
+      //     appointment.isCompleted = obj["is_completed"];
+      //     patient.braces.appointments.add(appointment);
+      //   }
+      // }
+
       var response =
           await postData("$ServerIP/api/protected/GetPatientTeethMap", {
         "patient_id": widget.patientID,
       });
+
+      patient.braces.teethMapID = response["ID"];
       List<dynamic> teeth = response["teeth"];
       teeth.sort((a, b) => a["tooth_code"].compareTo(b["tooth_code"]));
 
       for (var obj in teeth) {
         final GlobalKey key = GlobalKey();
+        final GlobalKey _key = GlobalKey();
         Tooth tooth = Tooth();
         tooth.id = obj["ID"];
         tooth.toothCode = obj["tooth_code"];
         tooth.condition.name = obj["condition"];
         tooth.condition.id = obj["condition_id"];
+        if (tooth.condition.id != 0) {
+          tooth.condition.price = conditions
+              .firstWhere((element) => element.id == tooth.condition.id)
+              .price;
+        }
         tooth.condition.color = obj["hex_color"] == ""
             ? Colors.white
             : HexColor.fromHex(obj["hex_color"]);
@@ -334,6 +550,26 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}_Colored.png",
               tooth.condition.color!,
             );
+            final imageBytesLateral = await returnColoredTooth(
+              "assets/images/teeth/Lateral_${tooth.toothCode[2]}_Colored.png",
+              tooth.condition.color!,
+            );
+            teethBottomLateralLeft.add(
+              InkWell(
+                key: _key,
+                onTap: () async {
+                  ui.Image image = await decodeImageFromList(imageBytesLateral);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale! * 1.5).toString(), false);
+                  showTeethDialog(tooth, position);
+                  //
+                },
+                child: Image.memory(
+                  imageBytesLateral,
+                  scale: scale! / 1.5,
+                ),
+              ),
+            );
             teethBottomLeft.add(
               InkWell(
                 key: key,
@@ -351,6 +587,27 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               ),
             );
           } else {
+            teethBottomLateralLeft.add(
+              InkWell(
+                key: _key,
+                onTap: () async {
+                  late Uint8List imageBytes;
+                  var data = await rootBundle.load(
+                    "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                  );
+                  imageBytes = data.buffer.asUint8List();
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale!).toString(), false);
+                  showTeethDialog(tooth, position);
+                  //
+                },
+                child: Image.asset(
+                  "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                  scale: scale! / 1.5,
+                ),
+              ),
+            );
             teethBottomLeft.add(
               InkWell(
                 key: key,
@@ -377,6 +634,29 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             final imageBytes = await returnColoredTooth(
                 "assets/images/teeth/${tooth.toothCode.substring(1)}_Colored.png",
                 tooth.condition.color!);
+            final imageBytesLateral = await returnColoredTooth(
+              "assets/images/teeth/Lateral_${tooth.toothCode[2]}_Colored.png",
+              tooth.condition.color!,
+            );
+            teethBottomLateralRight.add(
+              InkWell(
+                key: _key,
+                onTap: () async {
+                  ui.Image image = await decodeImageFromList(imageBytesLateral);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale! * 1.5).toString(), true);
+                  showTeethDialog(tooth, position);
+                },
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(math.pi),
+                  child: Image.memory(
+                    imageBytesLateral,
+                    scale: scale! / 1.5,
+                  ),
+                ),
+              ),
+            );
             teethBottomRight.add(
               InkWell(
                 key: key,
@@ -397,6 +677,30 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               ),
             );
           } else {
+            teethBottomLateralRight.add(
+              InkWell(
+                key: _key,
+                onTap: () async {
+                  late Uint8List imageBytes;
+                  var data = await rootBundle.load(
+                    "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                  );
+                  imageBytes = data.buffer.asUint8List();
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale!).toString(), true);
+                  showTeethDialog(tooth, position);
+                },
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(math.pi),
+                  child: Image.asset(
+                    "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                    scale: scale! / 1.5,
+                  ),
+                ),
+              ),
+            );
             teethBottomRight.add(
               InkWell(
                 key: key,
@@ -428,6 +732,25 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             final imageBytes = await returnColoredTooth(
                 "assets/images/teeth/${tooth.toothCode.substring(1)}_Colored.png",
                 tooth.condition.color!);
+            final imageBytesLateral = await returnColoredTooth(
+              "assets/images/teeth/Lateral_${tooth.toothCode[2]}_Colored.png",
+              tooth.condition.color!,
+            );
+            teethTopLateralLeft.add(
+              InkWell(
+                key: _key,
+                onTap: () async {
+                  ui.Image image = await decodeImageFromList(imageBytesLateral);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale! * 1.5).toString(), false);
+                  showTeethDialog(tooth, position);
+                },
+                child: Image.memory(
+                  imageBytesLateral,
+                  scale: scale! / 1.5,
+                ),
+              ),
+            );
             teethTopLeft.add(
               InkWell(
                 key: key,
@@ -444,6 +767,26 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               ),
             );
           } else {
+            teethTopLateralLeft.add(
+              InkWell(
+                key: _key,
+                onTap: () async {
+                  late Uint8List imageBytes;
+                  var data = await rootBundle.load(
+                    "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                  );
+                  imageBytes = data.buffer.asUint8List();
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale! * 1.5).toString(), false);
+                  showTeethDialog(tooth, position);
+                },
+                child: Image.asset(
+                  "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                  scale: scale! / 1.5,
+                ),
+              ),
+            );
             teethTopLeft.add(
               InkWell(
                 key: key,
@@ -471,6 +814,29 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             final imageBytes = await returnColoredTooth(
                 "assets/images/teeth/${tooth.toothCode[1]}${int.parse(tooth.toothCode[2])}_Colored.png",
                 tooth.condition.color!);
+            final imageBytesLateral = await returnColoredTooth(
+              "assets/images/teeth/Lateral_${tooth.toothCode[2]}_Colored.png",
+              tooth.condition.color!,
+            );
+            teethTopLateralRight.add(
+              InkWell(
+                key: _key,
+                onTap: () async {
+                  ui.Image image = await decodeImageFromList(imageBytesLateral);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale! * 1.5).toString(), true);
+                  showTeethDialog(tooth, position);
+                },
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(math.pi),
+                  child: Image.memory(
+                    imageBytesLateral,
+                    scale: scale! / 1.5,
+                  ),
+                ),
+              ),
+            );
             teethTopRight.add(
               InkWell(
                 key: key,
@@ -491,6 +857,30 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               ),
             );
           } else {
+            teethTopLateralRight.add(
+              InkWell(
+                key: _key,
+                onTap: () async {
+                  late Uint8List imageBytes;
+                  var data = await rootBundle.load(
+                    "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                  );
+                  imageBytes = data.buffer.asUint8List();
+                  ui.Image image = await decodeImageFromList(imageBytes);
+                  RelativeRect position = returnImagePosition(
+                      key, (image.height / scale! * 1.5).toString(), true);
+                  showTeethDialog(tooth, position);
+                },
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(math.pi),
+                  child: Image.asset(
+                    "assets/images/teeth/Lateral_${tooth.toothCode[2]}.png",
+                    scale: scale! / 1.5,
+                  ),
+                ),
+              ),
+            );
             teethTopRight.add(
               InkWell(
                 key: key,
@@ -529,7 +919,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     scale = MediaQuery.of(context).size.shortestSide > 500
         ? MediaQuery.of(context).size.shortestSide / 180
         : MediaQuery.of(context).size.shortestSide > 380
-            ? MediaQuery.of(context).size.shortestSide / 38
+            ? MediaQuery.of(context).size.shortestSide / 45
             : MediaQuery.of(context).size.shortestSide / 28;
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F9),
@@ -590,47 +980,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                   ),
                 );
               } catch (e) {
-                dialogContext = context;
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: SizedBox(
-                          height: 400,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: double.infinity,
-                                child: Center(
-                                  // Display lottie animation
-                                  child: Lottie.asset(
-                                    "assets/lottie/Error.json",
-                                    height: 300,
-                                    width: 300,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(dialogContext);
-                                },
-                                child: const Text(
-                                  "Close",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    });
+                showErrorDialog(context);
               }
             },
             child: Container(
@@ -668,25 +1018,157 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                   const SizedBox(
                     height: 30,
                   ),
-                  Center(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children:
-                            teethTopLeft.reversed.toList() + teethTopRight,
-                      ),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ...List.generate(8, (index) {
+                        return Expanded(
+                          child: SizedBox(
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.shortestSide /
+                                          3,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      teethTopLeft.reversed.toList()[index],
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      teethTopLateralLeft.reversed
+                                          .toList()[index],
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text((index + 1).toString()),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.shortestSide /
+                                          3,
+                                  child: Column(
+                                    children: [
+                                      Text((index - 32).abs().toString()),
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      teethBottomLateralLeft.reversed
+                                          .toList()[index],
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      teethBottomLeft.reversed.toList()[index],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                      ...List.generate(8, (index) {
+                        return Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.shortestSide /
+                                        3,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    teethTopRight[index],
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    teethTopLateralRight[index],
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text((index + 9).toString()),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.shortestSide /
+                                        3,
+                                child: Column(
+                                  children: [
+                                    Text((index - 24).abs().toString()),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    teethBottomLateralRight[index],
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    teethBottomRight[index],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      })
+                    ],
                   ),
-                  const SizedBox(height: 50),
-                  Center(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: teethBottomLeft.reversed.toList() +
-                            teethBottomRight,
-                      ),
-                    ),
-                  ),
+                  // Center(
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //     children: teethTopLeft.reversed.toList() + teethTopRight,
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 5),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     ...List.generate(
+                  //       16,
+                  //       (index) => Padding(
+                  //         padding: const EdgeInsets.only(left: 5),
+                  //         child: Text(
+                  //           (index + 1).toString(),
+                  //         ),
+                  //       ),
+                  //     )
+                  //   ],
+                  // ),
+                  // const SizedBox(height: 20),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     ...List.generate(
+                  //       16,
+                  //       (index) => Padding(
+                  //         padding: const EdgeInsets.only(left: 5),
+                  //         child: Text(
+                  //           (index + 17).toString(),
+                  //         ),
+                  //       ),
+                  //     ).reversed
+                  //   ],
+                  // ),
+                  // const SizedBox(height: 5),
+                  // Center(
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  //     children: teethBottomLateralLeft.reversed.toList() +
+                  //         teethBottomLateralRight,
+                  //   ),
+                  // ),
+                  // Center(
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //     children:
+                  //         teethBottomLeft.reversed.toList() + teethBottomRight,
+                  //   ),
+                  // ),
                   const SizedBox(height: 60),
                   Text(
                     "Patient: ${patient.name}",
@@ -728,38 +1210,352 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PatientPrescriptionScreen(
-                            patient: patient,
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PatientPrescriptionScreen(
+                                patient: patient,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Text(
+                                "Prescriptions",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 5,
+                              ),
+                              Icon(
+                                Icons.description_rounded,
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Text(
-                            "Prescriptions",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          Icon(
-                            Icons.description_rounded,
-                          ),
-                        ],
                       ),
-                    ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      // ElevatedButton(
+                      //   onPressed: () {
+                      //     if (patient.braces.notes != "") {
+                      //       Navigator.push(
+                      //         context,
+                      //         MaterialPageRoute(
+                      //           builder: (_) => BraceScreen(
+                      //             patient: patient,
+                      //           ),
+                      //         ),
+                      //       );
+                      //     } else {
+                      //       showDialog(
+                      //           context: context,
+                      //           builder: (context) {
+                      //             TextEditingController notes =
+                      //                 TextEditingController();
+                      //             return Dialog(
+                      //               child: SizedBox(
+                      //                 width: 400,
+                      //                 height: 400,
+                      //                 child: Column(
+                      //                   children: [
+                      //                     const SizedBox(
+                      //                       height: 20,
+                      //                     ),
+                      //                     Container(
+                      //                       padding: const EdgeInsets.all(10),
+                      //                       child: TextField(
+                      //                         autocorrect: false,
+                      //                         controller: notes,
+                      //                         decoration: const InputDecoration(
+                      //                           focusedBorder:
+                      //                               OutlineInputBorder(
+                      //                             borderSide: BorderSide(
+                      //                               color: Color(0xFF011627),
+                      //                               width: 2.0,
+                      //                             ),
+                      //                           ),
+                      //                           border: OutlineInputBorder(),
+                      //                           labelText: 'Notes',
+                      //                           labelStyle: TextStyle(
+                      //                             fontWeight: FontWeight.w600,
+                      //                             fontSize: 20,
+                      //                           ),
+                      //                         ),
+                      //                         maxLines: 5,
+                      //                       ),
+                      //                     ),
+                      //                     const Spacer(),
+                      //                     Container(
+                      //                       height: 50,
+                      //                       padding: const EdgeInsets.fromLTRB(
+                      //                           10, 0, 10, 0),
+                      //                       child: ElevatedButton(
+                      //                         onPressed: () async {
+                      //                           try {
+                      //                             var response = await postData(
+                      //                                 "$ServerIP/api/protected/RegisterBraces",
+                      //                                 {
+                      //                                   "patient_id":
+                      //                                       patient.id,
+                      //                                   "notes": notes.text,
+                      //                                 });
+                      //                             if (response["message"] ==
+                      //                                 "Registered Successfully") {
+                      //                               showDialog(
+                      //                                   context: context,
+                      //                                   barrierDismissible:
+                      //                                       false,
+                      //                                   builder: (context) {
+                      //                                     dialogContext =
+                      //                                         context;
+                      //                                     return Dialog(
+                      //                                       shape:
+                      //                                           RoundedRectangleBorder(
+                      //                                         borderRadius:
+                      //                                             BorderRadius
+                      //                                                 .circular(
+                      //                                                     12.0),
+                      //                                       ),
+                      //                                       child: SizedBox(
+                      //                                         height: 400,
+                      //                                         child: Column(
+                      //                                           mainAxisAlignment:
+                      //                                               MainAxisAlignment
+                      //                                                   .center,
+                      //                                           children: [
+                      //                                             SizedBox(
+                      //                                               width: double
+                      //                                                   .infinity,
+                      //                                               child:
+                      //                                                   Center(
+                      //                                                 // Display lottie animation
+                      //                                                 child: Lottie
+                      //                                                     .asset(
+                      //                                                   "assets/lottie/Success.json",
+                      //                                                   height:
+                      //                                                       300,
+                      //                                                   width:
+                      //                                                       300,
+                      //                                                 ),
+                      //                                               ),
+                      //                                             ),
+                      //                                             TextButton(
+                      //                                               onPressed:
+                      //                                                   () {
+                      //                                                 Navigator.pop(
+                      //                                                     dialogContext);
+                      //                                                 Navigator
+                      //                                                     .pushReplacement(
+                      //                                                   context,
+                      //                                                   MaterialPageRoute(
+                      //                                                     builder: (_) =>
+                      //                                                         const HomeScreen(),
+                      //                                                   ),
+                      //                                                 );
+                      //                                               },
+                      //                                               child:
+                      //                                                   const Text(
+                      //                                                 "Close",
+                      //                                                 style:
+                      //                                                     TextStyle(
+                      //                                                   fontWeight:
+                      //                                                       FontWeight.bold,
+                      //                                                   fontSize:
+                      //                                                       20,
+                      //                                                 ),
+                      //                                               ),
+                      //                                             ),
+                      //                                           ],
+                      //                                         ),
+                      //                                       ),
+                      //                                     );
+                      //                                   });
+                      //                             } else {
+                      //                               showDialog(
+                      //                                   context: context,
+                      //                                   barrierDismissible:
+                      //                                       false,
+                      //                                   builder: (context) {
+                      //                                     dialogContext =
+                      //                                         context;
+                      //                                     return Dialog(
+                      //                                       shape:
+                      //                                           RoundedRectangleBorder(
+                      //                                         borderRadius:
+                      //                                             BorderRadius
+                      //                                                 .circular(
+                      //                                                     12.0),
+                      //                                       ),
+                      //                                       child: SizedBox(
+                      //                                         height: 400,
+                      //                                         child: Column(
+                      //                                           mainAxisAlignment:
+                      //                                               MainAxisAlignment
+                      //                                                   .center,
+                      //                                           children: [
+                      //                                             SizedBox(
+                      //                                               width: double
+                      //                                                   .infinity,
+                      //                                               child:
+                      //                                                   Center(
+                      //                                                 // Display lottie animation
+                      //                                                 child: Lottie
+                      //                                                     .asset(
+                      //                                                   "assets/lottie/Error.json",
+                      //                                                   height:
+                      //                                                       300,
+                      //                                                   width:
+                      //                                                       300,
+                      //                                                 ),
+                      //                                               ),
+                      //                                             ),
+                      //                                             TextButton(
+                      //                                               onPressed:
+                      //                                                   () {
+                      //                                                 Navigator.pop(
+                      //                                                     dialogContext);
+                      //                                                 Navigator.pop(
+                      //                                                     dialogContext);
+                      //                                               },
+                      //                                               child:
+                      //                                                   const Text(
+                      //                                                 "Close",
+                      //                                                 style:
+                      //                                                     TextStyle(
+                      //                                                   fontWeight:
+                      //                                                       FontWeight.bold,
+                      //                                                   fontSize:
+                      //                                                       20,
+                      //                                                 ),
+                      //                                               ),
+                      //                                             ),
+                      //                                           ],
+                      //                                         ),
+                      //                                       ),
+                      //                                     );
+                      //                                   });
+                      //                             }
+                      //                           } catch (e) {
+                      //                             showDialog(
+                      //                                 context: context,
+                      //                                 barrierDismissible: false,
+                      //                                 builder: (context) {
+                      //                                   dialogContext = context;
+                      //                                   return Dialog(
+                      //                                     shape:
+                      //                                         RoundedRectangleBorder(
+                      //                                       borderRadius:
+                      //                                           BorderRadius
+                      //                                               .circular(
+                      //                                                   12.0),
+                      //                                     ),
+                      //                                     child: SizedBox(
+                      //                                       height: 400,
+                      //                                       child: Column(
+                      //                                         mainAxisAlignment:
+                      //                                             MainAxisAlignment
+                      //                                                 .center,
+                      //                                         children: [
+                      //                                           SizedBox(
+                      //                                             width: double
+                      //                                                 .infinity,
+                      //                                             child: Center(
+                      //                                               // Display lottie animation
+                      //                                               child: Lottie
+                      //                                                   .asset(
+                      //                                                 "assets/lottie/Error.json",
+                      //                                                 height:
+                      //                                                     300,
+                      //                                                 width:
+                      //                                                     300,
+                      //                                               ),
+                      //                                             ),
+                      //                                           ),
+                      //                                           TextButton(
+                      //                                             onPressed:
+                      //                                                 () {
+                      //                                               Navigator.pop(
+                      //                                                   dialogContext);
+                      //                                               Navigator.pop(
+                      //                                                   dialogContext);
+                      //                                             },
+                      //                                             child:
+                      //                                                 const Text(
+                      //                                               "Close",
+                      //                                               style:
+                      //                                                   TextStyle(
+                      //                                                 fontWeight:
+                      //                                                     FontWeight
+                      //                                                         .bold,
+                      //                                                 fontSize:
+                      //                                                     20,
+                      //                                               ),
+                      //                                             ),
+                      //                                           ),
+                      //                                         ],
+                      //                                       ),
+                      //                                     ),
+                      //                                   );
+                      //                                 });
+                      //                           }
+                      //                         },
+                      //                         child: const Text(
+                      //                           "Register",
+                      //                           style: TextStyle(
+                      //                             fontSize: 20,
+                      //                             fontWeight: FontWeight.w600,
+                      //                           ),
+                      //                         ),
+                      //                       ),
+                      //                     ),
+                      //                     const SizedBox(
+                      //                       height: 20,
+                      //                     ),
+                      //                   ],
+                      //                 ),
+                      //               ),
+                      //             );
+                      //           });
+                      //     }
+                      //   },
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      //     child: Row(
+                      //       mainAxisSize: MainAxisSize.min,
+                      //       children: [
+                      //         Text(
+                      //           patient.braces.notes != ""
+                      //               ? "Braces"
+                      //               : "Add Braces",
+                      //           style: const TextStyle(
+                      //             fontSize: 18,
+                      //             fontWeight: FontWeight.w600,
+                      //           ),
+                      //         ),
+                      //         const SizedBox(
+                      //           width: 5,
+                      //         ),
+                      //         patient.braces.notes != ""
+                      //             ? const Icon(Icons.troubleshoot_sharp)
+                      //             : const Icon(Icons.add_circle),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -940,7 +1736,11 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           ),
         );
       } else if (value == "Make Appointment") {
-        route = MakeAppointmentScreen(tooth: tooth, patient: patient);
+        route = MakeAppointmentScreen(
+          tooth: tooth,
+          patient: patient,
+          isBraces: false,
+        );
       } else if (value == "History") {
         route = ToothHistoryScreen(
           tooth: tooth,

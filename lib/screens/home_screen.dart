@@ -8,6 +8,7 @@ import 'package:dentex/screens/dashboard_screen.dart';
 import 'package:dentex/screens/doctor_patients.dart';
 import 'package:dentex/screens/favourites_screen.dart';
 import 'package:dentex/screens/search_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -42,6 +43,11 @@ class _HomeScreenState extends State<HomeScreen> {
       userInfo.username = userName;
       userInfo.permission = permission;
       userInfo.clinicName = clinicName;
+      FirebaseMessaging.instance.getToken().then((token) {
+        postData("$ServerIP/api/protected/LinkDeviceToken", {
+          "token": token,
+        });
+      });
     });
 
     super.initState();

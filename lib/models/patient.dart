@@ -11,6 +11,15 @@ class Patient {
   String gender = "";
   int age = 0;
   bool isFavourite = false;
+  Braces braces = Braces();
+}
+
+class Braces {
+  int id = 0;
+  int teethMapID = 0;
+  int patientID = 0;
+  List<Appointment> appointments = [];
+  String notes = "";
 }
 
 class Condition {
