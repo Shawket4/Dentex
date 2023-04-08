@@ -137,3 +137,25 @@ func RegisterDemo(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Registered Successfully"})
 }
+
+func DeleteUser(c *gin.Context) {
+	user_id, err := Token.ExtractTokenID(c)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := Models.GetUserByID(user_id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := Models.DB.Delete(&Models.User{}, user.ID).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Account Deleted Successfully"})
+}
