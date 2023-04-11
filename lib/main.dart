@@ -1,8 +1,11 @@
 // ignore_for_file: unused_local_variable, non_constant_identifier_names, constant_identifier_names, unused_import
+import 'dart:io';
+
 import 'package:dentex/components/bottom_nav_bar.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/models/user.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dentex/screens/home_screen.dart';
 import 'package:dentex/screens/login_screen.dart';
@@ -30,30 +33,33 @@ extension HexColor on Color {
       '${blue.toRadixString(16).padLeft(2, '0')}';
 }
 
-const String ServerIP = "http://144.126.234.206:5505";
+const String ServerIP = "https://dentex.app";
 // const String ServerIP = "http://localhost:5505";
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
+  if (!kIsWeb) {
+    WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
 
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {});
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {});
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  }
+
   runApp(const MainWidget());
 }
 
