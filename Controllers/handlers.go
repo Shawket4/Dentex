@@ -479,14 +479,6 @@ func ChangeAppointmentCompletionStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Completion Status Updated Successfully"})
 }
 
-func GetAllDoctors(c *gin.Context) {
-	var doctors []Models.Doctor
-	if err := Models.DB.Model(&Models.Doctor{}).Find(&doctors).Error; err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, err)
-	}
-	c.JSON(http.StatusOK, doctors)
-}
 
 func GetAllPatients(c *gin.Context) {
 	var patients []Models.Patient

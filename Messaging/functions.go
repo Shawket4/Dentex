@@ -88,9 +88,12 @@ func UnlinkDeviceToken(c *gin.Context) {
 			currentTokens = append(currentTokens, token)
 		}
 	}
-	if err := Models.DB.Delete(&currentTokens).Error; err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	for _, token := range currentTokens {
+		if err := Models.DB.Delete(&token).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 	}
+
 }

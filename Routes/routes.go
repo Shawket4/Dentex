@@ -4,6 +4,7 @@ import (
 	"github.com/Shawket4/Dentex/Controllers"
 	"github.com/Shawket4/Dentex/Messaging"
 	"github.com/Shawket4/Dentex/Middleware"
+	"github.com/Shawket4/Dentex/Payment"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,6 +14,7 @@ func ConfigRoutes(router *gin.Engine) {
 	public.POST("/RegisterDemo", Controllers.RegisterDemo)
 	authorized := router.Group("/api/protected")
 	authorized.Use(Middleware.JwtAuthMiddleware())
+	authorized.Use(Middleware.CheckDoctorState())
 	authorized.GET("/user", Controllers.CurrentUser)
 	authorized.POST("/RegisterPatient", Controllers.RegisterPatient)
 	authorized.POST("/RegisterPrescription", Controllers.RegisterPrescription)
@@ -46,7 +48,7 @@ func ConfigRoutes(router *gin.Engine) {
 	authorized.POST("/LinkDeviceToken", Messaging.LinkDeviceToken)
 	authorized.POST("/UnlinkDeviceToken", Messaging.UnlinkDeviceToken)
 	authorized.GET("/DeleteUser", Controllers.DeleteUser)
-	// public.POST("/SendApi", Messaging.SendApi)
+	// public.POST("/SendApi", Messaging.SendApi)	
 	// authorized.GET("/GetDoctorWorkingHours", Controllers.GetDoctorWorkingHours)
 	adminRoutes := router.Group("/api/admin")
 	adminRoutes.Use(Middleware.JwtAuthMiddleware())
@@ -54,7 +56,8 @@ func ConfigRoutes(router *gin.Engine) {
 	adminRoutes.POST("/register", Controllers.Register)
 	adminRoutes.POST("/RegisterDoctor", Controllers.RegisterDoctor)
 	adminRoutes.GET("/GetAllPatients", Controllers.GetAllPatients)
-	adminRoutes.GET("/GetAllDoctors", Controllers.GetAllDoctors)
+	adminRoutes.GET("/ReturnAllDoctors", Payment.ReturnAllDoctors)
+	adminRoutes.POST("/ChangeDoctorState", Payment.ChangeDoctorState)
 	adminRoutes.POST("DeleteDoctor", Controllers.DeleteDoctor)
 	router.Static("/Web", "./Static")
 	router.Static("/Welcome", "./Welcome")

@@ -15,8 +15,8 @@ type User struct {
 	Username   string        `gorm:"size:255;not null;unique" json:"username"`
 	Password   string        `gorm:"size:255;not null;" json:"password"`
 	Permission int           `json:"permission"`
-	IsDemo     bool          `json:"is_demo"`
 	Tokens     []DeviceToken `gorm:"foreignKey:UserID"`
+	IsFrozen   bool          `json:"is_frozen"`
 }
 
 type DeviceToken struct {
@@ -26,7 +26,6 @@ type DeviceToken struct {
 }
 
 func GetUserByID(uid uint) (User, error) {
-
 	var user User
 
 	if err := DB.Preload("Tokens").First(&user, uid).Error; err != nil {
@@ -39,6 +38,10 @@ func GetUserByID(uid uint) (User, error) {
 
 }
 
+func (user *User) ChangeState() {
+	user.IsFrozen = !user.IsFrozen
+}
+
 func (user *User) PrepareGive() {
 	user.Password = ""
 }
@@ -47,7 +50,7 @@ func VerifyPassword(password, hashedPassword string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
-func LoginCheck(username string, password string) (string, error) {
+func LoginCheck(username string, password string) (uint, string, error) {
 
 	var err error
 
@@ -56,22 +59,22 @@ func LoginCheck(username string, password string) (string, error) {
 	err = DB.Model(User{}).Where("username = ?", username).Take(&user).Error
 
 	if err != nil {
-		return "", err
+		return 0, "", err
 	}
 
 	err = VerifyPassword(password, user.Password)
 
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		return "", err
+		return 0, "", err
 	}
 
 	token, err := Token.GenerateToken(user.ID)
 
 	if err != nil {
-		return "", err
+		return 0, "", err
 	}
 
-	return token, nil
+	return user.ID, token, nil
 
 }
 

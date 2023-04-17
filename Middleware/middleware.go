@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Shawket4/Dentex/Controllers"
 	"github.com/Shawket4/Dentex/Models"
 	"github.com/Shawket4/Dentex/Utils/Token"
 	"github.com/gin-gonic/gin"
@@ -155,6 +156,32 @@ type RegisterInput struct {
 	Username   string `json:"name" binding:"required"`
 	Password   string `json:"password" binding:"required"`
 	Permission int    `json:"permission"`
+}
+
+func CheckDoctorState() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user_id, err := Token.ExtractTokenID(c)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Unauthorized Token Extraction")
+			c.Abort()
+			return
+		}
+
+		user, err := Models.GetUserByID(user_id)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Unauthorized User Extraction")
+			c.Abort()
+			return
+		}
+		if user.IsFrozen {
+			Controllers.Logout(c)
+			c.String(http.StatusUnauthorized, "Account Frozen")
+			c.Abort()
+			return
+		} else {
+			c.Next()
+		}
+	}
 }
 
 // func RegisterDoctorMiddleware() gin.HandlerFunc {

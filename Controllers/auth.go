@@ -3,15 +3,16 @@ package Controllers
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Shawket4/Dentex/Models"
 	"github.com/Shawket4/Dentex/Utils/Token"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 func CurrentUser(c *gin.Context) {
-
 	user_id, err := Token.ExtractTokenID(c)
 
 	if err != nil {
@@ -48,10 +49,21 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
+func Logout(c *gin.Context) {
+	token, err := Token.ExtractJWT(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	claims := jwt.MapClaims{}
+	claims["authorized"] = false
+	claims["exp"] = time.Now()
+	token2 := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token.Claims = token2.Claims
+}
+
 func Login(c *gin.Context) {
-
 	var input LoginInput
-
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -62,13 +74,19 @@ func Login(c *gin.Context) {
 	user.Username = input.Username
 	user.Password = input.Password
 
-	token, err := Models.LoginCheck(user.Username, user.Password)
+	uid, token, err := Models.LoginCheck(user.Username, user.Password)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "username or password is incorrect."})
 		return
 	}
 
+	user, _ = Models.GetUserByID(uid)
+
+	if user.IsFrozen {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User Frozen"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"message": "Login Successful", "jwt": token})
 
 }
@@ -112,7 +130,6 @@ func RegisterDemo(c *gin.Context) {
 	user.Username = input.Username
 	user.Password = input.Password
 	user.Permission = 1
-	user.IsDemo = true
 	_, err := user.SaveUser()
 
 	if err != nil {
@@ -129,6 +146,7 @@ func RegisterDemo(c *gin.Context) {
 	}
 	doctor.UserID = user.ID
 	doctor.Schedule = Models.Schedule{DoctorID: doctor.UserID}
+	doctor.IsDemo = true
 	// Models.CreateDoctorWorkingHours(&doctor)
 	if err := Models.DB.Model(&Models.Doctor{}).Create(&doctor).Error; err != nil {
 		log.Println(err)
@@ -152,7 +170,12 @@ func DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := Models.DB.Delete(&Models.User{}, user.ID).Error; err != nil {
+	if err := Models.DB.Unscoped().Delete(&Models.DeviceToken{}, "user_id = ?", user.ID).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := Models.DB.Unscoped().Delete(&Models.User{}, user.ID).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

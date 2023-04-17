@@ -13,6 +13,8 @@ type Doctor struct {
 	Schedule       Schedule `json:"schedule"`
 	// DoctorWorkingHours []DoctorWorkingHour `json:"doctor_working_hours"`
 	PhotoUrl string `json:"photo_url"`
+	IsDemo   bool   `json:"is_demo"`
+	IsFrozen bool   `json:"is_frozen" gorm:"-"`
 }
 
 type Schedule struct {
