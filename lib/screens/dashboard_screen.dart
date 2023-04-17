@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, non_constant_identifier_names, unused_import
 
+import 'dart:convert';
+
 import 'package:dentex/components/app_bar.dart';
 import 'package:dentex/components/bottom_nav_bar.dart';
 import 'package:dentex/components/drawer.dart';
@@ -13,7 +15,9 @@ import 'package:flutter/material.dart';
 import 'package:dentex/screens/login_screen.dart';
 import 'package:dentex/main.dart';
 import 'package:lottie/lottie.dart';
+import 'package:json_store/json_store.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:sqflite/sqlite_api.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key, required this.openDrawer}) : super(key: key);
@@ -49,11 +53,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (!isUserLoaded) {
       DateTime currentDate = DateTime.now();
       isUserLoaded = true;
-      var response =
-          await getData("$ServerIP/api/protected/GetDoctorSchedule", context);
+      JsonStore jsonStore = JsonStore();
+      dynamic response;
+      dynamic earningsResponse;
       if (userInfo.permission == 2) {
         return userInfo;
       }
+      bool isOnline = await isConnected();
+      if (isOnline) {
+        response =
+            await getData("$ServerIP/api/protected/GetDoctorSchedule", context);
+        Batch batch = await jsonStore.startBatch();
+        await jsonStore.setItem(
+          'DoctorSchedule',
+          response,
+          batch: batch,
+        );
+        earningsResponse =
+            await getData("$ServerIP/api/protected/GetDoctorEarnings", context);
+        await jsonStore.setItem(
+          "Earnings",
+          earningsResponse,
+          batch: batch,
+        );
+        jsonStore.commitBatch(batch);
+      } else {
+        response = await jsonStore.getItem("DoctorSchedule");
+        earningsResponse = await jsonStore.getItem("Earnings");
+      }
+      earningsLast7Days =
+          double.parse(earningsResponse["earnings_last_7_days"].toString());
+      earningsThisMonth =
+          double.parse(earningsResponse["earnings_this_month"].toString());
       for (var obj in response["schedule"]["time_blocks"]) {
         obj = obj["appointment"];
         Appointment appointment = Appointment();
@@ -80,12 +111,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           currentMonthAppointments.add(appointment);
         }
       }
-      response =
-          await getData("$ServerIP/api/protected/GetDoctorEarnings", context);
-      earningsLast7Days =
-          double.parse(response["earnings_last_7_days"].toString());
-      earningsThisMonth =
-          double.parse(response["earnings_this_month"].toString());
       allAppointments.sort(
         (a, b) => b.date!.compareTo(a.date!),
       );

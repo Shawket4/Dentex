@@ -42,7 +42,7 @@ class _SideMenuState extends State<SideMenu> {
               child: Column(
                 children: [
                   const SizedBox(
-                    height: 60,
+                    height: 80,
                   ),
                   Align(
                     alignment: Alignment.centerLeft,

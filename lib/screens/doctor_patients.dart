@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:dentex/components/app_bar.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/main.dart';
@@ -5,7 +7,9 @@ import 'package:dentex/models/patient.dart';
 import 'package:dentex/screens/login_screen.dart';
 import 'package:dentex/screens/patient_details.dart';
 import 'package:flutter/material.dart';
+import 'package:json_store/json_store.dart';
 import 'package:lottie/lottie.dart';
+import 'package:sqflite/sqlite_api.dart';
 
 class DoctorPatientScreen extends StatefulWidget {
   const DoctorPatientScreen({super.key, required this.openDrawer});
@@ -26,8 +30,25 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
 
   Future<String> loadPatients() async {
     if (!isLoaded) {
-      var response =
-          await getData("$ServerIP/api/protected/GetDoctorPatients", context);
+      dynamic response;
+      Map<String, dynamic>? finalResponse = {};
+      bool isOnline = await isConnected();
+      JsonStore jsonStore = JsonStore();
+      if (isOnline) {
+        response =
+            await getData("$ServerIP/api/protected/GetDoctorPatients", context);
+        finalResponse["patients"] = response;
+        Batch batch = await jsonStore.startBatch();
+        await jsonStore.setItem(
+          'DoctorPatients',
+          finalResponse,
+          batch: batch,
+        );
+        jsonStore.commitBatch(batch);
+      } else {
+        finalResponse = await jsonStore.getItem("DoctorPatients");
+        response = finalResponse!["patients"];
+      }
       if (response.isEmpty) {
         return "Empty";
       }

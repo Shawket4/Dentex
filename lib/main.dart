@@ -34,8 +34,8 @@ extension HexColor on Color {
       '${blue.toRadixString(16).padLeft(2, '0')}';
 }
 
-// const String ServerIP = "https://dentex.app";
-const String ServerIP = "http://localhost:5505";
+const String ServerIP = "https://dentex.app";
+// const String ServerIP = "http://localhost:5505";
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
@@ -72,7 +72,26 @@ void main() async {
 final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 late String jwt;
 User userInfo = User();
+Future<bool> isConnected() async {
+  try {
+    final response = await Dio().get('https://www.google.com');
+    return response.statusCode == 200;
+  } catch (e) {
+    return false;
+  }
+}
+
 Future<String> get _getJwt async {
+  bool isOnline = await isConnected();
+  if (!isOnline) {
+    return "Offline";
+  }
+  // Dio dio = Dio();
+  // try {
+  // } catch (e) {
+  //   print("No Internet");
+  // }
+
   final SharedPreferences prefs = await _prefs;
   // await prefs.remove("jwt");
   jwt = (prefs.getString('jwt') ?? "");
@@ -165,12 +184,14 @@ class _MainWidgetState extends State<MainWidget> {
                     ),
                   ),
                 );
-              } else {
+              } else if (snapshot.data != "Offline") {
                 if (jwt != "") {
                   return const HomeScreen();
                 } else {
                   return const LoginPage();
                 }
+              } else {
+                return const HomeScreen();
               }
             }),
       ),
