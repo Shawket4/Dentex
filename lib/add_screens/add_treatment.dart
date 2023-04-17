@@ -243,11 +243,14 @@ class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
                     showLoadingDialog(context);
                     try {
                       var response = await postData(
-                          "$ServerIP/api/protected/RegisterTreatment", {
-                        "treatment_name": name.text,
-                        "treatment_price": double.parse(price.text),
-                        "hex_color": HexColor(selectedColor).toHex(),
-                      }).timeout(const Duration(seconds: 5));
+                              "$ServerIP/api/protected/RegisterTreatment",
+                              {
+                                "treatment_name": name.text,
+                                "treatment_price": double.parse(price.text),
+                                "hex_color": HexColor(selectedColor).toHex(),
+                              },
+                              context)
+                          .timeout(const Duration(seconds: 5));
 
                       if (response["message"] == "Registered Successfully") {
                         showSuccessDialog(context);

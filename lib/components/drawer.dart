@@ -11,6 +11,7 @@ import 'package:dentex/screens/doctor_patients.dart';
 import 'package:dentex/screens/doctor_treatments.dart';
 import 'package:dentex/screens/favourites_screen.dart';
 import 'package:dentex/screens/home_screen.dart';
+import 'package:dentex/screens/manage_users.dart';
 import 'package:dentex/screens/search_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class _SideMenuState extends State<SideMenu> {
               child: Column(
                 children: [
                   const SizedBox(
-                    height: 100,
+                    height: 60,
                   ),
                   Align(
                     alignment: Alignment.centerLeft,
@@ -58,7 +59,7 @@ class _SideMenuState extends State<SideMenu> {
                     height: 30,
                   ),
                   ...List.generate(
-                    sideItems.length - 4,
+                    sideItems.length - 5,
                     (index) => Stack(
                       children: [
                         AnimatedPositioned(
@@ -135,6 +136,10 @@ class _SideMenuState extends State<SideMenu> {
                   ),
                   userInfo.permission == 2
                       ? buildMenuItem("Add Doctor", const AddDoctorScreen(), 4)
+                      : Container(),
+                  userInfo.permission == 2
+                      ? buildMenuItem(
+                          "Manage Users", const ManageUserScreen(), 5)
                       : Container(),
                   userInfo.permission == 1
                       ? buildMenuItem(
@@ -317,6 +322,14 @@ void loadSideItems(Function openDrawer) {
       artboard: "ADD",
       stateMachineName: "ICON_Interactivity",
       title: "Add Doctor",
+      smi: "Example",
+      route: const Placeholder(),
+    ),
+    RiveAsset(
+      file: "assets/rive/add_icon.riv",
+      artboard: "ADD",
+      stateMachineName: "ICON_Interactivity",
+      title: "Manage Users",
       smi: "Example",
       route: const Placeholder(),
     ),

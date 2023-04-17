@@ -204,12 +204,15 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                 }
                 try {
                   var response = await postData(
-                      "$ServerIP/api/protected/RegisterPrescription", {
-                    "patient_id": prescription.patientID,
-                    "date": dateOfPrescription.text,
-                    "prescription_items":
-                        prescription.prescriptionItems.toJSON(),
-                  }).timeout(const Duration(seconds: 5));
+                          "$ServerIP/api/protected/RegisterPrescription",
+                          {
+                            "patient_id": prescription.patientID,
+                            "date": dateOfPrescription.text,
+                            "prescription_items":
+                                prescription.prescriptionItems.toJSON(),
+                          },
+                          context)
+                      .timeout(const Duration(seconds: 5));
 
                   if (response["message"] == "Registered Successfully") {
                     showSuccessDialog(context);
