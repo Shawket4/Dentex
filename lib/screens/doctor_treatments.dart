@@ -25,7 +25,7 @@ class _DoctorTreatmentScreenState extends State<DoctorTreatmentScreen> {
   Future<String> loadPatients() async {
     if (!isLoaded) {
       var treatmentsResponse =
-          await getData("$ServerIP/api/protected/GetDoctorTreatments");
+          await getData("$ServerIP/api/protected/GetDoctorTreatments", context);
       if (treatmentsResponse.isEmpty) {
         return "Empty";
       }

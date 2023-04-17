@@ -41,9 +41,12 @@ class _TreatmentDetailScreenState extends State<TreatmentDetailScreen> {
           GestureDetector(
             onTap: () async {
               try {
-                await postData("$ServerIP/api/protected/DeleteTreatment", {
-                  "id": widget.treatment.id,
-                });
+                await postData(
+                    "$ServerIP/api/protected/DeleteTreatment",
+                    {
+                      "id": widget.treatment.id,
+                    },
+                    context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(

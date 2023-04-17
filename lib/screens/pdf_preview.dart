@@ -45,9 +45,12 @@ class _PDFPreviewScreenState extends State<PDFPreviewScreen> {
           GestureDetector(
             onTap: () async {
               try {
-                await postData("$ServerIP/api/protected/DeletePrescription", {
-                  "id": widget.prescription.id,
-                });
+                await postData(
+                    "$ServerIP/api/protected/DeletePrescription",
+                    {
+                      "id": widget.prescription.id,
+                    },
+                    context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(

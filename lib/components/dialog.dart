@@ -1,5 +1,4 @@
 import 'package:dentex/main.dart';
-import 'package:dentex/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -28,7 +27,7 @@ Future showLoadingDialog(BuildContext context) {
       });
 }
 
-Future showErrorDialogLogin(BuildContext context) {
+Future showErrorDialogLogin(BuildContext context, String message) {
   return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -51,9 +50,9 @@ Future showErrorDialogLogin(BuildContext context) {
                     ),
                   ),
                 ),
-                const Text(
-                  "Invalid Credentials",
-                  style: TextStyle(
+                Text(
+                  message,
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
@@ -63,8 +62,7 @@ Future showErrorDialogLogin(BuildContext context) {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
+                    MainWidget.restartApp(context);
                   },
                   child: const Text(
                     "Close",
@@ -157,13 +155,7 @@ Future showSuccessDialog(BuildContext context) {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const MainWidget(),
-                      ),
-                    );
+                    MainWidget.restartApp(context);
                   },
                   child: const Text(
                     "Close",

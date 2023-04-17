@@ -49,7 +49,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (!isUserLoaded) {
       DateTime currentDate = DateTime.now();
       isUserLoaded = true;
-      var response = await getData("$ServerIP/api/protected/GetDoctorSchedule");
+      var response =
+          await getData("$ServerIP/api/protected/GetDoctorSchedule", context);
       if (userInfo.permission == 2) {
         return userInfo;
       }
@@ -79,7 +80,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           currentMonthAppointments.add(appointment);
         }
       }
-      response = await getData("$ServerIP/api/protected/GetDoctorEarnings");
+      response =
+          await getData("$ServerIP/api/protected/GetDoctorEarnings", context);
       earningsLast7Days =
           double.parse(response["earnings_last_7_days"].toString());
       earningsThisMonth =
@@ -174,7 +176,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
               onPressed: () async {
-                final bool response = await Logout;
+                final bool response = await Logout(context);
                 if (response) {
                   Navigator.pushReplacement(context,
                       MaterialPageRoute(builder: (_) => const LoginPage()));

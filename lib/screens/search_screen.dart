@@ -35,7 +35,7 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
               onPressed: () async {
-                final bool response = await Logout;
+                final bool response = await Logout(context);
                 if (response) {
                   // ignore: use_build_context_synchronously
                   Navigator.pushReplacement(context,
@@ -169,9 +169,12 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       isSearching = true;
     });
-    var response = await postData("$ServerIP/api/protected/Search", {
-      "query": searchController.text,
-    });
+    var response = await postData(
+        "$ServerIP/api/protected/Search",
+        {
+          "query": searchController.text,
+        },
+        context);
     foundPatients.clear();
     for (var obj in response) {
       Patient patient = Patient();

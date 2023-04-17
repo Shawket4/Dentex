@@ -443,7 +443,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     if (!isMapLoaded) {
       conditions.add(Condition(name: "None", price: 0.0, color: Colors.white));
       var treatmentsResponse =
-          await getData("$ServerIP/api/protected/GetDoctorTreatments");
+          await getData("$ServerIP/api/protected/GetDoctorTreatments", context);
       for (var obj in treatmentsResponse) {
         Condition condition = Condition();
         condition.id = obj["ID"];
@@ -454,10 +454,12 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             : HexColor.fromHex(obj["hex_color"]);
         conditions.add(condition);
       }
-      var userResponse =
-          await postData("$ServerIP/api/protected/GetPatientDetails", {
-        "patient_id": widget.patientID,
-      });
+      var userResponse = await postData(
+          "$ServerIP/api/protected/GetPatientDetails",
+          {
+            "patient_id": widget.patientID,
+          },
+          context);
 
       patient.id = userResponse["ID"];
       patient.doctorID = userResponse["doctor_id"];
@@ -492,10 +494,12 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
       //   }
       // }
 
-      var response =
-          await postData("$ServerIP/api/protected/GetPatientTeethMap", {
-        "patient_id": widget.patientID,
-      });
+      var response = await postData(
+          "$ServerIP/api/protected/GetPatientTeethMap",
+          {
+            "patient_id": widget.patientID,
+          },
+          context);
 
       patient.braces.teethMapID = response["ID"];
       List<dynamic> teeth = response["teeth"];
@@ -930,9 +934,11 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             onTap: () async {
               patient.isFavourite = true;
               await postData(
-                  "$ServerIP/api/protected/EditPatientFavouriteStatus", {
-                "patient_id": patient.id,
-              });
+                  "$ServerIP/api/protected/EditPatientFavouriteStatus",
+                  {
+                    "patient_id": patient.id,
+                  },
+                  context);
               star.input!.change(true);
               await Future.delayed(const Duration(milliseconds: 600), () {});
               star.input!.change(false);
@@ -970,9 +976,12 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           GestureDetector(
             onTap: () async {
               try {
-                await postData("$ServerIP/api/protected/DeletePatient", {
-                  "id": patient.id,
-                });
+                await postData(
+                    "$ServerIP/api/protected/DeletePatient",
+                    {
+                      "id": patient.id,
+                    },
+                    context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -1707,12 +1716,15 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                   const Spacer(),
                   TextButton(
                     onPressed: () async {
-                      await postData("$ServerIP/api/protected/EditTeethMap", {
-                        "patient_id": patient.id,
-                        "patient_teeth_map": {
-                          "teeth": teethMap.toJSON(),
-                        },
-                      });
+                      await postData(
+                          "$ServerIP/api/protected/EditTeethMap",
+                          {
+                            "patient_id": patient.id,
+                            "patient_teeth_map": {
+                              "teeth": teethMap.toJSON(),
+                            },
+                          },
+                          context);
 
                       await reloadTeethMap();
                       Navigator.pop(context);

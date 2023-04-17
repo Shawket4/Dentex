@@ -191,7 +191,6 @@ class _RegisterDemoScreenState extends State<RegisterDemoScreen> {
                       }).timeout(const Duration(seconds: 5));
                       if (response.data["message"] ==
                           "Registered Successfully") {
-                        Navigator.pop(context);
                         showSuccessDialog(context);
                       }
                     } catch (e) {

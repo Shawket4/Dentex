@@ -26,8 +26,8 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
 
   Future<String> loadPatients() async {
     if (!isLoaded) {
-      var response =
-          await getData("$ServerIP/api/protected/GetFavouritePatients");
+      var response = await getData(
+          "$ServerIP/api/protected/GetFavouritePatients", context);
       if (response == null) {
         return "Empty";
       }
@@ -60,7 +60,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
               onPressed: () async {
-                final bool response = await Logout;
+                final bool response = await Logout(context);
                 if (response) {
                   // ignore: use_build_context_synchronously
                   Navigator.pushReplacement(context,

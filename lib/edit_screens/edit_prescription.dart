@@ -238,13 +238,16 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
                 }
                 try {
                   var response = await postData(
-                      "$ServerIP/api/protected/EditPrescription", {
-                    "ID": prescription.id,
-                    "patient_id": prescription.patientID,
-                    "date": dateOfPrescription.text,
-                    "prescription_items":
-                        prescription.prescriptionItems.toJSON(),
-                  }).timeout(const Duration(seconds: 5));
+                          "$ServerIP/api/protected/EditPrescription",
+                          {
+                            "ID": prescription.id,
+                            "patient_id": prescription.patientID,
+                            "date": dateOfPrescription.text,
+                            "prescription_items":
+                                prescription.prescriptionItems.toJSON(),
+                          },
+                          context)
+                      .timeout(const Duration(seconds: 5));
 
                   if (response["message"] == "Updated Successfully") {
                     showSuccessDialog(context);

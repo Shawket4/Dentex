@@ -242,7 +242,8 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
     if (isWorkingHoursLoaded) {
       return "";
     }
-    var response = await getData("$ServerIP/api/protected/GetDoctorSchedule");
+    var response =
+        await getData("$ServerIP/api/protected/GetDoctorSchedule", context);
     // print(response);
     timeBlockResponse = response["schedule"]["time_blocks"];
     // for (var timeBlock in timeBlockResponse) {
@@ -255,7 +256,7 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
     //   } catch (e) {}
     // }
     var treatmentsResponse =
-        await getData("$ServerIP/api/protected/GetDoctorTreatments");
+        await getData("$ServerIP/api/protected/GetDoctorTreatments", context);
     for (var obj in treatmentsResponse) {
       Condition condition = Condition();
       condition.id = obj["ID"];
@@ -539,18 +540,21 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
                         selectedTimeBlock!.dateTime!.minute,
                       );
                       var response = await postData(
-                          "$ServerIP/api/protected/EditAppointment", {
-                        "ID": widget.appointment.id,
-                        "date": intl.DateFormat("yyyy/MM/dd & h:mm a")
-                            .format(finalDateTime),
-                        "patient_id": widget.appointment.patientID,
-                        "condition_id": selectedCondition!.id,
-                        // "treatment": widget. tooth.condition.name,
-                        "notes": notesController.text,
-                        "price": double.parse(priceController.text),
-                        "tooth_id": widget.appointment.toothID,
-                        // "hex_color": widget.tooth.condition.color!.toHex(),
-                      }).timeout(const Duration(seconds: 5));
+                              "$ServerIP/api/protected/EditAppointment",
+                              {
+                                "ID": widget.appointment.id,
+                                "date": intl.DateFormat("yyyy/MM/dd & h:mm a")
+                                    .format(finalDateTime),
+                                "patient_id": widget.appointment.patientID,
+                                "condition_id": selectedCondition!.id,
+                                // "treatment": widget. tooth.condition.name,
+                                "notes": notesController.text,
+                                "price": double.parse(priceController.text),
+                                "tooth_id": widget.appointment.toothID,
+                                // "hex_color": widget.tooth.condition.color!.toHex(),
+                              },
+                              context)
+                          .timeout(const Duration(seconds: 5));
 
                       if (response["message"] == "Updated Successfully") {
                         showSuccessDialog(context);

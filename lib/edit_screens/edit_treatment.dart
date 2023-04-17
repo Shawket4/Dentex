@@ -269,12 +269,15 @@ class _EditTreatmentScreenState extends State<EditTreatmentScreen> {
                   showLoadingDialog(context);
                   try {
                     var response = await postData(
-                        "$ServerIP/api/protected/EditTreatment", {
-                      "ID": widget.treatment.id,
-                      "name": name.text,
-                      "price": double.parse(price.text),
-                      "hex_color": HexColor(selectedColor).toHex(),
-                    }).timeout(const Duration(seconds: 5));
+                            "$ServerIP/api/protected/EditTreatment",
+                            {
+                              "ID": widget.treatment.id,
+                              "name": name.text,
+                              "price": double.parse(price.text),
+                              "hex_color": HexColor(selectedColor).toHex(),
+                            },
+                            context)
+                        .timeout(const Duration(seconds: 5));
 
                     if (response["message"] == "Updated Successfully") {
                       showSuccessDialog(context);

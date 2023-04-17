@@ -101,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       onPressed: () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (_) => RegisterDemoScreen(),
@@ -138,7 +138,17 @@ class _LoginPageState extends State<LoginPage> {
                             }
                           }
                         } catch (e) {
-                          showErrorDialogLogin(context);
+                          if (e is DioError) {
+                            if (e.response!.statusCode == 401) {
+                              showErrorDialogLogin(context, "Account Frozen");
+                            } else {
+                              showErrorDialogLogin(
+                                  context, "Invalid Credentials");
+                            }
+                          } else {
+                            showErrorDialogLogin(
+                                context, "Invalid Credentials");
+                          }
                         }
                       },
                       child: Container(

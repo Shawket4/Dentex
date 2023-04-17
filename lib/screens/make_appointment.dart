@@ -243,7 +243,8 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
     if (isWorkingHoursLoaded) {
       return "";
     }
-    var response = await getData("$ServerIP/api/protected/GetDoctorSchedule");
+    var response =
+        await getData("$ServerIP/api/protected/GetDoctorSchedule", context);
     // print(response);
     timeBlockResponse = response["schedule"]["time_blocks"];
     // for (var timeBlock in timeBlockResponse) {
@@ -311,7 +312,7 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                   ),
                   SizedBox(
                     width: double.infinity,
-                    height: 500,
+                    height: MediaQuery.of(context).size.height / 1.5,
                     child: Card(
                       color: const Color(0xFFF1F3FF),
                       elevation: 5,
@@ -322,13 +323,40 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                             alignment: Alignment.centerLeft,
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                intl.DateFormat("yyyy/MM/dd")
-                                    .format(currentDate),
-                                style: GoogleFonts.jost(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    intl.DateFormat("yyyy/MM/dd")
+                                        .format(currentDate),
+                                    style: GoogleFonts.jost(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () async {
+                                      DateTime? returnedDate =
+                                          await showDatePicker(
+                                              context: context,
+                                              initialDate: currentDate,
+                                              firstDate:
+                                                  DateTime.now()
+                                                      .subtract(
+                                                          const Duration(
+                                                              days: 365 * 30)),
+                                              lastDate: DateTime.now().add(
+                                                  const Duration(
+                                                      days: 365 * 30)));
+                                      if (returnedDate != null) {
+                                        currentDate = returnedDate;
+                                        selectedDate = returnedDate;
+                                        setState(() {});
+                                      }
+                                    },
+                                    icon: const Icon(
+                                        Icons.calendar_month_rounded),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -429,23 +457,6 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                               ),
                             ),
                           ),
-                          IconButton(
-                            onPressed: () async {
-                              DateTime? returnedDate = await showDatePicker(
-                                  context: context,
-                                  initialDate: currentDate,
-                                  firstDate: DateTime.now()
-                                      .subtract(const Duration(days: 365 * 30)),
-                                  lastDate: DateTime.now()
-                                      .add(const Duration(days: 365 * 30)));
-                              if (returnedDate != null) {
-                                currentDate = returnedDate;
-                                selectedDate = returnedDate;
-                                setState(() {});
-                              }
-                            },
-                            icon: const Icon(Icons.calendar_month_rounded),
-                          ),
                         ],
                       ),
                     ),
@@ -487,7 +498,8 @@ class MakeAppointmentScreenState extends State<MakeAppointmentScreen> {
                         }
                         var response = await postData(
                                 "$ServerIP/api/protected/RegisterAppointment",
-                                data)
+                                data,
+                                context)
                             .timeout(const Duration(seconds: 5));
 
                         if (response["message"] == "Registered Successfully") {

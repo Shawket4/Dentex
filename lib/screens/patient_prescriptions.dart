@@ -27,10 +27,12 @@ class _PatientPrescriptionScreenState extends State<PatientPrescriptionScreen> {
   List<Prescription> patientPrescriptions = [];
   Future get loadPatientPrescriptions async {
     if (!isLoaded) {
-      var response =
-          await postData("$ServerIP/api/protected/GetPatientPrescriptions", {
-        "patient_id": widget.patient.id,
-      });
+      var response = await postData(
+          "$ServerIP/api/protected/GetPatientPrescriptions",
+          {
+            "patient_id": widget.patient.id,
+          },
+          context);
       for (var obj in response) {
         Prescription prescription = Prescription().fromJSON(obj);
         patientPrescriptions.add(prescription);

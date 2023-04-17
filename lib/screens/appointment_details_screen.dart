@@ -45,9 +45,12 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
           GestureDetector(
             onTap: () async {
               try {
-                await postData("$ServerIP/api/protected/DeleteAppointment", {
-                  "id": widget.appointment.id,
-                });
+                await postData(
+                    "$ServerIP/api/protected/DeleteAppointment",
+                    {
+                      "id": widget.appointment.id,
+                    },
+                    context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -231,12 +234,14 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
             TextButton(
               onPressed: () {
                 postData(
-                    "$ServerIP/api/protected/ChangeAppointmentCompletionStatus",
-                    {
-                      "appointment_id": widget.appointment.id,
-                      "completion_status": !widget.appointment.isCompleted!,
-                    }).then((value) => Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (_) => HomeScreen())));
+                        "$ServerIP/api/protected/ChangeAppointmentCompletionStatus",
+                        {
+                          "appointment_id": widget.appointment.id,
+                          "completion_status": !widget.appointment.isCompleted!,
+                        },
+                        context)
+                    .then((value) => Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (_) => HomeScreen())));
               },
               child: Container(
                 decoration: BoxDecoration(

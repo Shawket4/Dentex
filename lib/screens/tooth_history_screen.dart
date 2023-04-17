@@ -31,9 +31,12 @@ class _ToothHistoryScreenState extends State<ToothHistoryScreen> {
   List<Uint8List> imagesBytes = [];
   Future<String> get loadData async {
     if (!isLoaded) {
-      var response = await postData("$ServerIP/api/protected/GetToothHistory", {
-        "tooth_id": widget.tooth.id,
-      });
+      var response = await postData(
+          "$ServerIP/api/protected/GetToothHistory",
+          {
+            "tooth_id": widget.tooth.id,
+          },
+          context);
       if (response["tooth_history"] != null) {
         for (var obj in response["tooth_history"]) {
           Appointment appointment = Appointment();

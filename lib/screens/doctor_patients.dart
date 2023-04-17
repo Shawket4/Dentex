@@ -26,7 +26,8 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
 
   Future<String> loadPatients() async {
     if (!isLoaded) {
-      var response = await getData("$ServerIP/api/protected/GetDoctorPatients");
+      var response =
+          await getData("$ServerIP/api/protected/GetDoctorPatients", context);
       if (response.isEmpty) {
         return "Empty";
       }
@@ -60,7 +61,7 @@ class _DoctorPatientScreenState extends State<DoctorPatientScreen> {
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
               onPressed: () async {
-                final bool response = await Logout;
+                final bool response = await Logout(context);
                 if (response) {
                   // ignore: use_build_context_synchronously
                   Navigator.pushReplacement(context,

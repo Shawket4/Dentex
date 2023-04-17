@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:dentex/screens/home_screen.dart';
 import 'package:dentex/screens/login_screen.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 import 'package:material_color_generator/material_color_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
@@ -33,15 +34,20 @@ extension HexColor on Color {
       '${blue.toRadixString(16).padLeft(2, '0')}';
 }
 
-const String ServerIP = "https://dentex.app";
-// const String ServerIP = "http://localhost:5505";
+// const String ServerIP = "https://dentex.app";
+const String ServerIP = "http://localhost:5505";
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 
 void main() async {
-  if (!kIsWeb) {
-    WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isAndroid || Platform.isWindows) {
+    ByteData data = await rootBundle.load('assets/dentex.pem');
+    SecurityContext context = SecurityContext.defaultContext;
+    context.setTrustedCertificatesBytes(data.buffer.asUint8List());
+  }
+  if (!kIsWeb && !Platform.isMacOS && !Platform.isWindows) {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
@@ -89,19 +95,27 @@ Future<bool> SetJwt(String jwt) async {
 
 Dio dio = Dio();
 
-Future<bool> get Logout async {
-  await FirebaseMessaging.instance.getToken().then((token) async {
-    await postData("$ServerIP/api/protected/UnlinkDeviceToken", {
-      "token": token,
+Future<bool> Logout(BuildContext context) async {
+  if (!kIsWeb && !Platform.isMacOS && !Platform.isWindows) {
+    await FirebaseMessaging.instance.getToken().then((token) async {
+      await postData(
+          "$ServerIP/api/protected/UnlinkDeviceToken",
+          {
+            "token": token,
+          },
+          context);
     });
-  });
-
+  }
   final SharedPreferences prefs = await _prefs;
   return await prefs.remove("jwt");
 }
 
 class MainWidget extends StatefulWidget {
   const MainWidget({Key? key}) : super(key: key);
+  static void restartApp(BuildContext context) {
+    context.findAncestorStateOfType<_MainWidgetState>()!.restartApp();
+  }
+
   @override
   State<MainWidget> createState() => _MainWidgetState();
 }
@@ -112,43 +126,54 @@ class _MainWidgetState extends State<MainWidget> {
     super.initState();
   }
 
+  Key key = UniqueKey();
+
+  void restartApp() {
+    setState(() {
+      key = UniqueKey();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Dentex - Clinic Management",
-      theme: ThemeData(
-        fontFamily: "Inter",
-        primaryColor: const Color(0xFF0b132b),
-        colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: const Color(0xFF0b132b),
-          secondary: const Color(0xFF011627),
+    return KeyedSubtree(
+      key: key,
+      child: MaterialApp(
+        title: "Dentex - Clinic Management",
+        theme: ThemeData(
+          fontFamily: "Inter",
+          primaryColor: const Color(0xFF0b132b),
+          colorScheme: ColorScheme.fromSwatch().copyWith(
+            primary: const Color(0xFF0b132b),
+            secondary: const Color(0xFF011627),
+          ),
+          primarySwatch: generateMaterialColor(
+            color: const Color(0xFF0b132b),
+          ),
         ),
-        primarySwatch: generateMaterialColor(
-          color: const Color(0xFF0b132b),
-        ),
-      ),
-      debugShowCheckedModeBanner: false,
-      home: FutureBuilder(
-          future: _getJwt,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Scaffold(
-                body: Center(
-                  child: Lottie.asset(
-                    "assets/lottie/Loading.json",
-                    height: 200,
-                    width: 200,
+        debugShowCheckedModeBanner: false,
+        home: FutureBuilder(
+            future: _getJwt,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Scaffold(
+                  body: Center(
+                    child: Lottie.asset(
+                      "assets/lottie/Loading.json",
+                      height: 200,
+                      width: 200,
+                    ),
                   ),
-                ),
-              );
-            } else {
-              if (jwt != "") {
-                return const HomeScreen();
+                );
               } else {
-                return const LoginPage();
+                if (jwt != "") {
+                  return const HomeScreen();
+                } else {
+                  return const LoginPage();
+                }
               }
-            }
-          }),
+            }),
+      ),
     );
   }
 }

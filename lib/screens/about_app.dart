@@ -61,15 +61,18 @@ class AboutPage extends StatelessWidget {
               ),
               onPressed: () async {
                 try {
-                  var response =
-                      await getData("$ServerIP/api/protected/DeleteUser");
-                  print(response);
+                  var response = await getData(
+                      "$ServerIP/api/protected/DeleteUser", context);
                   if (response["message"] == "Account Deleted Successfully") {
-                    Logout;
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MainWidget(),
+                      ),
+                    );
                     showSuccessDialog(context);
                   }
                 } catch (e) {
-                  print(e);
                   showErrorDialog(context);
                 }
               },
