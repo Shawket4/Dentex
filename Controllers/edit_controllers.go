@@ -104,7 +104,7 @@ func EditAppointment(c *gin.Context) {
 	}
 	appointment.DoctorID = doctor.ID
 	appointment.Treatment = treatment.Name
-	appointment.Price = treatment.Price
+	// appointment.Price = treatment.Price
 	appointment.HexColor = treatment.HexColor
 	if err := Models.DB.Model(&Models.Schedule{}).Where("doctor_id = ?", doctor.ID).Preload("TimeBlocks").Find(&doctor.Schedule).Error; err != nil {
 		c.String(http.StatusBadRequest, "Unauthorized User Extraction")

@@ -8,9 +8,10 @@ type Appointment struct {
 	gorm.Model
 	DateTime    string `json:"date"`
 	TimeBlockID uint
-	DoctorID    uint `json:"doctor_id"`
-	PatientID   uint `json:"patient_id"`
-	ConditionID uint `json:"condition_id"`
+	DoctorID    uint    `json:"doctor_id"`
+	PatientID   uint    `json:"patient_id"`
+	Patient     Patient `gorm:"-" json:"patient"`
+	ConditionID uint    `json:"condition_id"`
 	// IsBraces    bool    `json:"is_braces"`
 	// BracesID    uint    `json:"braces_id"`
 	PatientName string  `json:"patient_name" gorm:"-"`

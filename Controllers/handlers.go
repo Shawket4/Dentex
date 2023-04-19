@@ -479,7 +479,6 @@ func ChangeAppointmentCompletionStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Completion Status Updated Successfully"})
 }
 
-
 func GetAllPatients(c *gin.Context) {
 	var patients []Models.Patient
 	if err := Models.DB.Model(&Models.Patient{}).Find(&patients).Error; err != nil {
@@ -553,7 +552,7 @@ func EditTeethMap(c *gin.Context) {
 }
 
 func GetDoctorPatients(c *gin.Context) {
-	var patients []Models.Patient
+	var patients []*Models.Patient
 	user_id, err := Token.ExtractTokenID(c)
 
 	if err != nil {
@@ -578,6 +577,41 @@ func GetDoctorPatients(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
+	}
+	for _, patient := range patients {
+		if err := Models.DB.Model(&Models.TeethMap{}).Where("id = ?", patient.PatientTeethMap.ID).Preload("Teeth").Find(&patient.PatientTeethMap).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+		for index, tooth := range patient.PatientTeethMap.Teeth {
+			var tooth_appointments []Models.Appointment
+			var uncompleted_appointments []Models.Appointment
+			if err := Models.DB.Model(&Models.Appointment{}).Where("tooth_id = ?", tooth.ID).Find(&tooth_appointments).Error; err != nil {
+				log.Println(err)
+				c.JSON(http.StatusInternalServerError, err)
+				return
+			}
+			for _, appointment := range tooth_appointments {
+				SetAppointmemntPatient(&appointment)
+				if !appointment.IsCompleted {
+					if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Select("tooth_code").Find(&appointment.ToothCode).Error; err != nil {
+						log.Println(err)
+						c.JSON(http.StatusInternalServerError, err)
+						return
+					}
+
+					if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", appointment.PatientID).Select("name").Find(&appointment.PatientName).Error; err != nil {
+						log.Println(err)
+						c.JSON(http.StatusInternalServerError, err)
+						return
+					}
+
+					uncompleted_appointments = append(uncompleted_appointments, appointment)
+				}
+			}
+			patient.PatientTeethMap.Teeth[index].UncompletedAppointments = uncompleted_appointments
+		}
 	}
 	c.JSON(http.StatusOK, patients)
 }
@@ -649,8 +683,8 @@ func GetDoctorEarnings(c *gin.Context) {
 }
 
 func GetFavouritePatients(c *gin.Context) {
-	var patients []Models.Patient
-	var favouritePatients []Models.Patient
+	var patients []*Models.Patient
+	var favouritePatients []*Models.Patient
 	user_id, err := Token.ExtractTokenID(c)
 
 	if err != nil {
@@ -676,9 +710,44 @@ func GetFavouritePatients(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
+
 	for _, patient := range patients {
 		if patient.IsFavourite {
 			favouritePatients = append(favouritePatients, patient)
+		}
+		if err := Models.DB.Model(&Models.TeethMap{}).Where("id = ?", patient.PatientTeethMap.ID).Preload("Teeth").Find(&patient.PatientTeethMap).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+		for index, tooth := range patient.PatientTeethMap.Teeth {
+			var tooth_appointments []Models.Appointment
+			var uncompleted_appointments []Models.Appointment
+			if err := Models.DB.Model(&Models.Appointment{}).Where("tooth_id = ?", tooth.ID).Find(&tooth_appointments).Error; err != nil {
+				log.Println(err)
+				c.JSON(http.StatusInternalServerError, err)
+				return
+			}
+			for _, appointment := range tooth_appointments {
+				if !appointment.IsCompleted {
+					if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Select("tooth_code").Find(&appointment.ToothCode).Error; err != nil {
+						log.Println(err)
+						c.JSON(http.StatusInternalServerError, err)
+						return
+					}
+
+					if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", appointment.PatientID).Select("name").Find(&appointment.PatientName).Error; err != nil {
+						log.Println(err)
+						c.JSON(http.StatusInternalServerError, err)
+						return
+					}
+
+					uncompleted_appointments = append(uncompleted_appointments, appointment)
+
+					fmt.Println(uncompleted_appointments)
+				}
+			}
+			patient.PatientTeethMap.Teeth[index].UncompletedAppointments = uncompleted_appointments
 		}
 	}
 	c.JSON(http.StatusOK, favouritePatients)
@@ -754,7 +823,7 @@ func GetDoctorSchedule(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, err)
 			return
 		}
-
+		SetAppointmemntPatient(&appointment)
 		doctor.Schedule.TimeBlocks[index].Appointment = appointment
 	}
 
@@ -801,7 +870,7 @@ func Search(c *gin.Context) {
 	//   ).Or(
 	// 	db.Where("pizza = ?", "hawaiian").Where("size = ?", "xlarge"),
 	//   ).Find(&Pizza{}).Statement
-	if err := Models.DB.Model(&Models.Patient{}).Where("LOWER(name) LIKE ?", "%"+input.Query+"%").Or("LOWER(address) LIKE ?", "%"+input.Query+"%").Or("LOWER(phone) LIKE ?", "%"+input.Query+"%").Or("age::varchar(255) = ?", input.Query).Find(&allPatients).Error; err != nil {
+	if err := Models.DB.Model(&Models.Patient{}).Where("LOWER(name) LIKE ?", "%"+input.Query+"%").Or("LOWER(address) LIKE ?", "%"+input.Query+"%").Or("LOWER(phone) LIKE ?", "%"+input.Query+"%").Or("age::varchar(255) = ?", input.Query).Preload("PatientTeethMap").Find(&allPatients).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -809,8 +878,42 @@ func Search(c *gin.Context) {
 	var patients []Models.Patient = []Models.Patient{}
 	for _, patient := range allPatients {
 		if patient.DoctorID == doctorID {
+			if err := Models.DB.Model(&Models.TeethMap{}).Where("id = ?", patient.PatientTeethMap.ID).Preload("Teeth").Find(&patient.PatientTeethMap).Error; err != nil {
+				log.Println(err)
+				c.JSON(http.StatusInternalServerError, err)
+				return
+			}
+			for index, tooth := range patient.PatientTeethMap.Teeth {
+				var tooth_appointments []Models.Appointment
+				var uncompleted_appointments []Models.Appointment
+				if err := Models.DB.Model(&Models.Appointment{}).Where("tooth_id = ?", tooth.ID).Find(&tooth_appointments).Error; err != nil {
+					log.Println(err)
+					c.JSON(http.StatusInternalServerError, err)
+					return
+				}
+				for _, appointment := range tooth_appointments {
+					SetAppointmemntPatient(&appointment)
+					if !appointment.IsCompleted {
+						if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Select("tooth_code").Find(&appointment.ToothCode).Error; err != nil {
+							log.Println(err)
+							c.JSON(http.StatusInternalServerError, err)
+							return
+						}
+
+						if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", appointment.PatientID).Select("name").Find(&appointment.PatientName).Error; err != nil {
+							log.Println(err)
+							c.JSON(http.StatusInternalServerError, err)
+							return
+						}
+
+						uncompleted_appointments = append(uncompleted_appointments, appointment)
+					}
+				}
+				patient.PatientTeethMap.Teeth[index].UncompletedAppointments = uncompleted_appointments
+			}
 			patients = append(patients, patient)
 		}
+
 	}
 	c.JSON(http.StatusOK, patients)
 }
@@ -983,6 +1086,43 @@ func GetDoctorAppointments(c *gin.Context) {
 		appointments[i].ToothCode = toothCode
 	}
 	c.JSON(http.StatusOK, appointments)
+}
+
+func SetAppointmemntPatient(appointment *Models.Appointment) error {
+	if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", appointment.PatientID).Preload("PatientTeethMap").Find(&appointment.Patient).Error; err != nil {
+		return err
+	}
+	if err := Models.DB.Model(&Models.TeethMap{}).Where("id = ?", appointment.Patient.PatientTeethMap.ID).Preload("Teeth").Find(&appointment.Patient.PatientTeethMap).Error; err != nil {
+		return err
+	}
+	for index, tooth := range appointment.Patient.PatientTeethMap.Teeth {
+		if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", tooth.ID).Find(&appointment.Patient.PatientTeethMap.Teeth[index]).Error; err != nil {
+			return err
+		}
+	}
+	for index, tooth := range appointment.Patient.PatientTeethMap.Teeth {
+		var tooth_appointments []Models.Appointment
+		var uncompleted_appointments []Models.Appointment
+		if err := Models.DB.Model(&Models.Appointment{}).Where("tooth_id = ?", tooth.ID).Find(&tooth_appointments).Error; err != nil {
+			return err
+		}
+		for _, appointment := range tooth_appointments {
+			if !appointment.IsCompleted {
+				if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Select("tooth_code").Find(&appointment.ToothCode).Error; err != nil {
+					return err
+				}
+
+				if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", appointment.PatientID).Select("name").Find(&appointment.PatientName).Error; err != nil {
+					return err
+				}
+
+				uncompleted_appointments = append(uncompleted_appointments, appointment)
+			}
+		}
+		appointment.Patient.PatientTeethMap.Teeth[index].UncompletedAppointments = uncompleted_appointments
+	}
+
+	return nil
 }
 
 func GetToothHistory(c *gin.Context) {

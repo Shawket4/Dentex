@@ -35,7 +35,7 @@ func SendMessage(tokens []Models.DeviceToken, title, messageString string) error
 	ctx := context.Background()
 	client, err := app.Messaging(ctx)
 	if err != nil {
-		log.Fatalf("error getting Messaging client: %v\n", err)
+		log.Printf("error getting Messaging client: %v\n", err)
 		return err
 	}
 
@@ -55,7 +55,7 @@ func SendMessage(tokens []Models.DeviceToken, title, messageString string) error
 
 	br, err := client.SendMulticast(context.Background(), message)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 		return err
 	}
 
