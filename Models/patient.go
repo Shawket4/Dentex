@@ -8,14 +8,15 @@ import (
 
 type Patient struct {
 	gorm.Model
-	Name            string   `json:"name"`
-	DoctorID        uint     `json:"doctor_id"`
-	Address         string   `json:"address"`
-	Phone           string   `json:"phone"`
-	Gender          string   `json:"gender"`
-	Age             int      `json:"age"`
-	IsFavourite     bool     `json:"is_favourite"`
-	PatientTeethMap TeethMap `json:"patient_teeth_map"`
+	Name            string        `json:"name"`
+	DoctorID        uint          `json:"doctor_id"`
+	Address         string        `json:"address"`
+	Phone           string        `json:"phone"`
+	Gender          string        `json:"gender"`
+	Age             int           `json:"age"`
+	IsFavourite     bool          `json:"is_favourite"`
+	PatientTeethMap TeethMap      `json:"patient_teeth_map"`
+	History         []Appointment `json:"history" gorm:"-"`
 	// Braces          Braces   `json:"braces"`
 }
 

@@ -584,6 +584,30 @@ func GetDoctorPatients(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, err)
 			return
 		}
+		var patientAppointments []Models.Appointment
+		if err := Models.DB.Model(&Models.Appointment{}).Where("patient_id = ?", patient.ID).Find(&patientAppointments).Error; err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+
+		for _, appointment := range patientAppointments {
+			if appointment.IsCompleted {
+				if err := Models.DB.Model(&Models.Tooth{}).Where("id = ?", appointment.ToothID).Select("tooth_code").Find(&appointment.ToothCode).Error; err != nil {
+					log.Println(err)
+					c.JSON(http.StatusInternalServerError, err)
+					return
+				}
+
+				if err := Models.DB.Model(&Models.Patient{}).Where("id = ?", appointment.PatientID).Select("name").Find(&appointment.PatientName).Error; err != nil {
+					log.Println(err)
+					c.JSON(http.StatusInternalServerError, err)
+					return
+				}
+				SetAppointmemntPatient(&appointment)
+				patient.History = append(patient.History, appointment)
+			}
+		}
 		for index, tooth := range patient.PatientTeethMap.Teeth {
 			var tooth_appointments []Models.Appointment
 			var uncompleted_appointments []Models.Appointment
@@ -606,7 +630,6 @@ func GetDoctorPatients(c *gin.Context) {
 						c.JSON(http.StatusInternalServerError, err)
 						return
 					}
-
 					uncompleted_appointments = append(uncompleted_appointments, appointment)
 				}
 			}

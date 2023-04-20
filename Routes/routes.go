@@ -48,7 +48,7 @@ func ConfigRoutes(router *gin.Engine) {
 	authorized.POST("/LinkDeviceToken", Messaging.LinkDeviceToken)
 	authorized.POST("/UnlinkDeviceToken", Messaging.UnlinkDeviceToken)
 	authorized.GET("/DeleteUser", Controllers.DeleteUser)
-	// public.POST("/SendApi", Messaging.SendApi)	
+	// public.POST("/SendApi", Messaging.SendApi)
 	// authorized.GET("/GetDoctorWorkingHours", Controllers.GetDoctorWorkingHours)
 	adminRoutes := router.Group("/api/admin")
 	adminRoutes.Use(Middleware.JwtAuthMiddleware())
