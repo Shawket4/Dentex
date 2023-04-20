@@ -6,7 +6,6 @@ import 'package:dentex/dio_helper.dart';
 import 'package:dentex/main.dart';
 import 'package:dentex/models/appointment.dart';
 import 'package:dentex/models/patient.dart';
-import 'package:dentex/screens/appointment_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:intl/intl.dart' as intl;
@@ -43,9 +42,9 @@ class _ToothHistoryScreenState extends State<ToothHistoryScreen> {
           appointment.id = obj["ID"];
           appointment.date =
               intl.DateFormat("yyyy/MM/dd & h:mm a").parse(obj["date"]);
-          appointment.patientID = obj["patient_id"];
+          appointment.patientID = obj["patient"]["id"];
           appointment.toothID = obj["tooth_id"];
-          appointment.patientName = obj["patient_name"];
+          appointment.patientName = obj["patient"]["name"];
           appointment.toothCode = obj["tooth_code"];
           appointment.condition.name = obj["treatment"];
           appointment.condition.id = obj["ID"];
@@ -115,14 +114,14 @@ class _ToothHistoryScreenState extends State<ToothHistoryScreen> {
                                 padding: const EdgeInsets.all(10),
                                 child: TextButton(
                                   onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => AppointmentDetailScreen(
-                                          appointment: toothAppointments[index],
-                                        ),
-                                      ),
-                                    );
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //     builder: (_) => AppointmentDetailScreen(
+                                    //       appointment: toothAppointments[index],
+                                    //     ),
+                                    //   ),
+                                    // );
                                   },
                                   child: Image.memory(
                                     imagesBytes[index],

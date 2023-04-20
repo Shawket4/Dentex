@@ -6,31 +6,30 @@ import 'package:dentex/components/rive_controller.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/edit_screens/edit_patient.dart';
 import 'package:dentex/main.dart';
-import 'package:dentex/models/appointment.dart';
 import 'package:dentex/models/patient.dart';
 import 'package:dentex/screens/home_screen.dart';
 import 'package:dentex/screens/make_appointment.dart';
+import 'package:dentex/screens/patient_history.dart';
 import 'package:dentex/screens/patient_prescriptions.dart';
-import 'package:dentex/screens/tooth_history_screen.dart';
 import 'package:dentex/screens/uncompleted_appointments_screen.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:rive/rive.dart';
-import 'package:intl/intl.dart' as intl;
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 class PatientDetailScreen extends StatefulWidget {
-  const PatientDetailScreen({super.key, required this.patientID});
-  final int patientID;
+  const PatientDetailScreen(
+      {super.key, required this.patient, required this.conditions});
+  final Patient patient;
+  final List<Condition> conditions;
   @override
   State<PatientDetailScreen> createState() => _PatientDetailScreenState();
 }
 
 class _PatientDetailScreenState extends State<PatientDetailScreen> {
-  TeethMap teethMap = TeethMap();
   List<Widget> teethTopLeft = [];
   List<Widget> teethTopRight = [];
   List<Widget> teethTopLateralLeft = [];
@@ -54,6 +53,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   @override
   void initState() {
     isMapLoaded = false;
+    patient = widget.patient;
+    conditions = widget.conditions;
     super.initState();
   }
 
@@ -66,7 +67,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     teethBottomLateralRight.clear();
     teethTopLateralLeft.clear();
     teethTopLateralRight.clear();
-    for (var tooth in teethMap.teeth) {
+    for (var tooth in widget.patient.teethMap.teeth) {
       final GlobalKey key = GlobalKey();
       final GlobalKey _key = GlobalKey();
       if (tooth.uncompletedAppointments.isNotEmpty) {
@@ -441,113 +442,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
 
   Future<String> loadPatientData() async {
     if (!isMapLoaded) {
-      conditions.add(Condition(name: "None", price: 0.0, color: Colors.white));
-      var treatmentsResponse =
-          await getData("$ServerIP/api/protected/GetDoctorTreatments", context);
-      for (var obj in treatmentsResponse) {
-        Condition condition = Condition();
-        condition.id = obj["ID"];
-        condition.name = obj["name"];
-        condition.price = double.parse(obj["price"].toString());
-        condition.color = obj["hex_color"] == ""
-            ? Colors.white
-            : HexColor.fromHex(obj["hex_color"]);
-        conditions.add(condition);
-      }
-      var userResponse = await postData(
-          "$ServerIP/api/protected/GetPatientDetails",
-          {
-            "patient_id": widget.patientID,
-          },
-          context);
-
-      patient.id = userResponse["ID"];
-      patient.doctorID = userResponse["doctor_id"];
-      patient.name = userResponse["name"];
-      patient.address = userResponse["address"];
-      patient.phone = userResponse["phone"];
-      patient.gender = userResponse["gender"];
-      patient.age = userResponse["age"];
-      patient.isFavourite = userResponse["is_favourite"];
-      // patient.braces.notes = userResponse["braces"]["notes"];
-      // patient.braces.id = userResponse["braces"]["ID"];
-      // patient.braces.patientID = patient.id;
-      // if (userResponse["braces"]["appointments"] != null) {
-      //   for (var obj in userResponse["braces"]["appointments"]) {
-      //     Appointment appointment = Appointment();
-      //     appointment.id = obj["ID"];
-      //     appointment.date =
-      //         intl.DateFormat("yyyy/MM/dd & h:mm a").parse(obj["date"]);
-      //     appointment.patientID = obj["patient_id"];
-      //     appointment.toothID = obj["tooth_id"];
-      //     appointment.patientName = obj["patient_name"];
-      //     appointment.toothCode = obj["tooth_code"];
-      //     appointment.condition.name = obj["treatment"];
-      //     appointment.condition.id = obj["ID"];
-      //     appointment.condition.color = obj["hex_color"] == ""
-      //         ? Colors.white
-      //         : HexColor.fromHex(obj["hex_color"]);
-      //     appointment.price = double.parse(obj["price"].toString());
-      //     appointment.isPaid = obj["is_paid"];
-      //     appointment.isCompleted = obj["is_completed"];
-      //     patient.braces.appointments.add(appointment);
-      //   }
-      // }
-
-      var response = await postData(
-          "$ServerIP/api/protected/GetPatientTeethMap",
-          {
-            "patient_id": widget.patientID,
-          },
-          context);
-
-      patient.braces.teethMapID = response["ID"];
-      List<dynamic> teeth = response["teeth"];
-      teeth.sort((a, b) => a["tooth_code"].compareTo(b["tooth_code"]));
-
-      for (var obj in teeth) {
+      for (var tooth in patient.teethMap.teeth) {
         final GlobalKey key = GlobalKey();
         final GlobalKey _key = GlobalKey();
-        Tooth tooth = Tooth();
-        tooth.id = obj["ID"];
-        tooth.toothCode = obj["tooth_code"];
-        tooth.condition.name = obj["condition"];
-        tooth.condition.id = obj["condition_id"];
-        if (tooth.condition.id != 0) {
-          tooth.condition.price = conditions
-              .firstWhere((element) => element.id == tooth.condition.id)
-              .price;
-        }
-        tooth.condition.color = obj["hex_color"] == ""
-            ? Colors.white
-            : HexColor.fromHex(obj["hex_color"]);
-        if (obj["uncompleted_appointments"] != null) {
-          for (var appointmentJSON in obj["uncompleted_appointments"]) {
-            Appointment appointment = Appointment();
-            appointment.id = appointmentJSON["ID"];
-            appointment.date = intl.DateFormat("yyyy/MM/dd & h:mm a")
-                .parse(appointmentJSON["date"]);
-            appointment.patientID = appointmentJSON["patient_id"];
-            appointment.patientName = appointmentJSON["patient_name"];
-            appointment.price =
-                double.parse(appointmentJSON["price"].toString());
-            appointment.condition.color = appointmentJSON["hex_color"] == ""
-                ? Colors.white
-                : HexColor.fromHex(appointmentJSON["hex_color"]);
-            appointment.isCompleted = false;
-            appointment.isPaid = appointmentJSON["is_paid"];
-            appointment.toothID = appointmentJSON["tooth_id"];
-            appointment.toothCode = appointmentJSON["tooth_code"];
-            appointment.condition.name = appointmentJSON["treatment"];
-            appointment.condition.id = appointmentJSON["ID"];
-            tooth.uncompletedAppointments.add(appointment);
-          }
-          tooth.condition.color = Colors.grey[600];
-        }
-
-        tooth.isTreated = obj["is_treated"];
-        teethMap.teeth.add(tooth);
-
         if (tooth.toothCode[1] == "B" && tooth.toothCode[0] == "L") {
           if (tooth.condition.color != Colors.white) {
             final imageBytes = await returnColoredTooth(
@@ -1257,6 +1154,40 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                       const SizedBox(
                         width: 10,
                       ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PatientHistoryScreen(
+                                allAppointments: patient.history,
+                                conditions: conditions,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Text(
+                                "History",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 5,
+                              ),
+                              Icon(
+                                Icons.history_rounded,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       // ElevatedButton(
                       //   onPressed: () {
                       //     if (patient.braces.notes != "") {
@@ -1612,18 +1543,18 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               ],
             ),
           ),
-        PopupMenuItem(
-          value: 'History',
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('History'),
-              Icon(
-                Icons.history_edu_rounded,
-              ),
-            ],
-          ),
-        ),
+        // PopupMenuItem(
+        //   value: 'History',
+        //   child: Row(
+        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //     children: const [
+        //       Text('History'),
+        //       Icon(
+        //         Icons.history_edu_rounded,
+        //       ),
+        //     ],
+        //   ),
+        // ),
         if (tooth.uncompletedAppointments.isNotEmpty)
           PopupMenuItem(
             value: 'Uncompleted Appointments',
@@ -1717,15 +1648,15 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                   TextButton(
                     onPressed: () async {
                       await postData(
-                          "$ServerIP/api/protected/EditTeethMap",
-                          {
-                            "patient_id": patient.id,
-                            "patient_teeth_map": {
-                              "teeth": teethMap.toJSON(),
-                            },
+                        "$ServerIP/api/protected/EditTeethMap",
+                        {
+                          "patient_id": patient.id,
+                          "patient_teeth_map": {
+                            "teeth": widget.patient.teethMap.toJSON(),
                           },
-                          context);
-
+                        },
+                        context,
+                      );
                       await reloadTeethMap();
                       Navigator.pop(context);
                     },
@@ -1753,17 +1684,18 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           patient: patient,
           isBraces: false,
         );
-      } else if (value == "History") {
-        route = ToothHistoryScreen(
-          tooth: tooth,
-          scale: scale,
-          patient: patient,
-        );
+        // } else if (value == "History") {
+        //   route = ToothHistoryScreen(
+        //     tooth: tooth,
+        //     scale: scale,
+        //     patient: patient,
+        //   );
       } else if (value == "Uncompleted Appointments") {
         route = UncompletedAppointmentScreen(
           tooth: tooth,
           scale: scale,
           patient: patient,
+          conditions: conditions,
         );
       }
       if (route == null) return;

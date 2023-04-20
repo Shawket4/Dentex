@@ -13,8 +13,7 @@ import 'package:dentex/screens/search_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:json_store/json_store.dart';
-import 'package:sqflite/sqlite_api.dart';
+import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> loadData() async {
     bool isOnline = await isConnected();
-    JsonStore jsonStore = JsonStore();
     dynamic response;
     if (isOnline) {
       response = await getData("$ServerIP/api/protected/user", context);
@@ -61,22 +59,14 @@ class _HomeScreenState extends State<HomeScreen> {
               context);
         });
       }
-      Batch batch = await jsonStore.startBatch();
-      await jsonStore.setItem(
-        'UserInfo',
-        response,
-        batch: batch,
-      );
-      jsonStore.commitBatch(batch);
+      await SetJSON(response, "UserInfo");
     } else {
-      response = await jsonStore.getItem("UserInfo");
+      response = await GetJSON("UserInfo");
+      response = json.decode(response);
     }
-    String userName = response["data"]["username"].toString();
-    int permission = response["data"]["permission"];
-    String clinicName = response["data"]["clinic_name"];
-    userInfo.username = userName;
-    userInfo.permission = permission;
-    userInfo.clinicName = clinicName;
+    userInfo.username = response["data"]["username"];
+    userInfo.permission = response["data"]["permission"];
+    userInfo.clinicName = response["data"]["clinic_name"];
     return;
   }
 

@@ -3,6 +3,7 @@ import 'package:dentex/models/patient.dart';
 class Appointment {
   int? id;
   int? patientID;
+  Patient patient = Patient();
   int? toothID;
   String? patientName;
   String? toothCode;

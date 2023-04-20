@@ -13,10 +13,12 @@ class UncompletedAppointmentScreen extends StatefulWidget {
     required this.tooth,
     required this.scale,
     required this.patient,
+    required this.conditions,
   });
   final Tooth tooth;
   final double? scale;
   final Patient patient;
+  final List<Condition> conditions;
   @override
   State<UncompletedAppointmentScreen> createState() =>
       _UncompletedAppointmentScreenState();
@@ -82,6 +84,7 @@ class _UncompletedAppointmentScreenState
                                   builder: (_) => AppointmentDetailScreen(
                                     appointment: widget
                                         .tooth.uncompletedAppointments[index],
+                                    conditions: widget.conditions,
                                   ),
                                 ),
                               );

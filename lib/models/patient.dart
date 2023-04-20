@@ -12,6 +12,8 @@ class Patient {
   int age = 0;
   bool isFavourite = false;
   Braces braces = Braces();
+  TeethMap teethMap = TeethMap();
+  List<Appointment> history = [];
 }
 
 class Braces {

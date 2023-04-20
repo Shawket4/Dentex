@@ -6,16 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:intl/intl.dart' as intl;
 
-class AllAppointments extends StatefulWidget {
-  const AllAppointments(
+class PatientHistoryScreen extends StatefulWidget {
+  const PatientHistoryScreen(
       {super.key, required this.allAppointments, required this.conditions});
   final List<Appointment> allAppointments;
   final List<Condition> conditions;
   @override
-  State<AllAppointments> createState() => _AllAppointmentsState();
+  State<PatientHistoryScreen> createState() => _PatientHistoryScreenState();
 }
 
-class _AllAppointmentsState extends State<AllAppointments> {
+class _PatientHistoryScreenState extends State<PatientHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

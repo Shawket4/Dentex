@@ -6,6 +6,8 @@ import 'package:dentex/dio_helper.dart';
 import 'package:dentex/edit_screens/edit_appointment.dart';
 import 'package:dentex/main.dart';
 import 'package:dentex/models/appointment.dart';
+import 'package:dentex/models/patient.dart';
+import 'package:dentex/screens/appointment_invoice.dart';
 import 'package:dentex/screens/home_screen.dart';
 import 'package:dentex/screens/patient_details.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,9 @@ import 'package:intl/intl.dart' as intl;
 
 class AppointmentDetailScreen extends StatefulWidget {
   final Appointment appointment;
-  const AppointmentDetailScreen({super.key, required this.appointment});
+  final List<Condition> conditions;
+  const AppointmentDetailScreen(
+      {super.key, required this.appointment, required this.conditions});
 
   @override
   State<AppointmentDetailScreen> createState() =>
@@ -22,6 +26,12 @@ class AppointmentDetailScreen extends StatefulWidget {
 }
 
 class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
+  @override
+  void initState() {
+    print(widget.appointment.patient.name);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,14 +100,30 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                 ),
               ),
             ),
-            const Center(
-              child: Text(
-                "Details",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Details",
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
-              ),
+                IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => AppointmentInvoiceScreen(
+                                    appointment: widget.appointment,
+                                  )));
+                    },
+                    icon: Icon(
+                      Icons.print_rounded,
+                      size: 28,
+                    ))
+              ],
             ),
             GestureDetector(
               onTap: () {
@@ -105,7 +131,8 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (_) => PatientDetailScreen(
-                      patientID: widget.appointment.patientID!,
+                      patient: widget.appointment.patient,
+                      conditions: widget.conditions,
                     ),
                   ),
                 );
@@ -115,7 +142,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                   Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Text(
-                      "Patient: ${widget.appointment.patientName}",
+                      "Patient: ${widget.appointment.patient.name}",
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w600,

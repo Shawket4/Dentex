@@ -7,6 +7,7 @@ import 'package:dentex/components/bottom_nav_bar.dart';
 import 'package:dentex/components/drawer.dart';
 import 'package:dentex/dio_helper.dart';
 import 'package:dentex/models/appointment.dart';
+import 'package:dentex/models/patient.dart';
 import 'package:dentex/models/user.dart';
 import 'package:dentex/screens/all_appointments.dart';
 import 'package:dentex/screens/appointment_details_screen.dart';
@@ -15,9 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:dentex/screens/login_screen.dart';
 import 'package:dentex/main.dart';
 import 'package:lottie/lottie.dart';
-import 'package:json_store/json_store.dart';
 import 'package:intl/intl.dart' as intl;
-import 'package:sqflite/sqlite_api.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key, required this.openDrawer}) : super(key: key);
@@ -32,6 +31,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Appointment> allAppointments = [];
   List<Appointment> currentMonthAppointments = [];
   List<Widget> appointmentWidgetsToday = [];
+  List<Condition> conditions = [];
   double? earningsLast7Days;
   double? earningsThisMonth;
   String? text;
@@ -53,9 +53,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (!isUserLoaded) {
       DateTime currentDate = DateTime.now();
       isUserLoaded = true;
-      JsonStore jsonStore = JsonStore();
       dynamic response;
       dynamic earningsResponse;
+      dynamic treatmentsResponse;
       if (userInfo.permission == 2) {
         return userInfo;
       }
@@ -63,23 +63,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (isOnline) {
         response =
             await getData("$ServerIP/api/protected/GetDoctorSchedule", context);
-        Batch batch = await jsonStore.startBatch();
-        await jsonStore.setItem(
-          'DoctorSchedule',
-          response,
-          batch: batch,
-        );
+        await SetJSON(response, "DoctorSchedule");
+
         earningsResponse =
             await getData("$ServerIP/api/protected/GetDoctorEarnings", context);
-        await jsonStore.setItem(
-          "Earnings",
-          earningsResponse,
-          batch: batch,
-        );
-        jsonStore.commitBatch(batch);
+        treatmentsResponse = await getData(
+            "$ServerIP/api/protected/GetDoctorTreatments", context);
+        await SetJSON(treatmentsResponse, "Treatments");
+        await SetJSON(earningsResponse, "Earnings");
       } else {
-        response = await jsonStore.getItem("DoctorSchedule");
-        earningsResponse = await jsonStore.getItem("Earnings");
+        response = await GetJSON("DoctorSchedule");
+        response = json.decode(response);
+        earningsResponse = await GetJSON("Earnings");
+        earningsResponse = json.decode(earningsResponse);
+        treatmentsResponse = await GetJSON("Treatments");
+        treatmentsResponse = json.decode(treatmentsResponse);
+      }
+      for (var obj in treatmentsResponse) {
+        Condition condition = Condition();
+        condition.id = obj["ID"];
+        condition.name = obj["name"];
+        condition.price = double.parse(obj["price"].toString());
+        condition.color = obj["hex_color"] == ""
+            ? Colors.white
+            : HexColor.fromHex(obj["hex_color"]);
+        conditions.add(condition);
       }
       earningsLast7Days =
           double.parse(earningsResponse["earnings_last_7_days"].toString());
@@ -104,6 +112,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
         appointment.isPaid = obj["is_paid"];
         appointment.isCompleted = obj["is_completed"];
         appointment.notes = obj["notes"];
+        appointment.patient.id = obj["patient"]["ID"];
+        appointment.patient.doctorID = obj["patient"]["doctor_id"];
+        appointment.patient.name = obj["patient"]["name"];
+        appointment.patient.address = obj["patient"]["address"];
+        appointment.patient.phone = obj["patient"]["phone"];
+        appointment.patient.gender = obj["patient"]["gender"];
+        appointment.patient.age = obj["patient"]["age"];
+        appointment.patient.isFavourite = obj["patient"]["is_favourite"];
+        List<dynamic> teeth = obj["patient"]["patient_teeth_map"]["teeth"];
+        teeth.sort((a, b) => a["tooth_code"].compareTo(b["tooth_code"]));
+        conditions
+            .add(Condition(name: "None", price: 0.0, color: Colors.white));
+        for (var objTooth in teeth) {
+          Tooth tooth = Tooth();
+          tooth.id = objTooth["ID"];
+          tooth.toothCode = objTooth["tooth_code"];
+          tooth.condition.name = objTooth["condition"];
+          tooth.condition.id = objTooth["condition_id"];
+          if (tooth.condition.id != 0) {
+            tooth.condition.price = conditions
+                .firstWhere((element) => element.id == tooth.condition.id)
+                .price;
+          }
+
+          tooth.condition.color = objTooth["hex_color"] == ""
+              ? Colors.white
+              : HexColor.fromHex(objTooth["hex_color"]);
+          if (objTooth["uncompleted_appointments"] != null) {
+            for (var appointmentJSON in objTooth["uncompleted_appointments"]) {
+              Appointment appointment = Appointment();
+              appointment.id = appointmentJSON["ID"];
+              appointment.date = intl.DateFormat("yyyy/MM/dd & h:mm a")
+                  .parse(appointmentJSON["date"]);
+              appointment.patientID = appointmentJSON["patient"]["id"];
+              appointment.patientName = appointmentJSON["patient"]["name"];
+              appointment.price =
+                  double.parse(appointmentJSON["price"].toString());
+              appointment.condition.color = appointmentJSON["hex_color"] == ""
+                  ? Colors.white
+                  : HexColor.fromHex(appointmentJSON["hex_color"]);
+              appointment.isCompleted = false;
+              appointment.isPaid = appointmentJSON["is_paid"];
+              appointment.toothID = appointmentJSON["tooth_id"];
+              appointment.toothCode = appointmentJSON["tooth_code"];
+              appointment.condition.name = appointmentJSON["treatment"];
+              appointment.condition.id = appointmentJSON["ID"];
+              tooth.uncompletedAppointments.add(appointment);
+            }
+            tooth.condition.color = Colors.grey[600];
+          }
+          tooth.isTreated = objTooth["is_treated"];
+          appointment.patient.teethMap.teeth.add(tooth);
+        }
+
         allAppointments.add(appointment);
 
         if (appointment.date!.year == currentDate.year &&
@@ -125,8 +187,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        AppointmentDetailScreen(appointment: appointment),
+                    builder: (_) => AppointmentDetailScreen(
+                      appointment: appointment,
+                      conditions: conditions,
+                    ),
                   ),
                 );
               },
@@ -332,6 +396,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         MaterialPageRoute(
                                           builder: (_) => AllAppointments(
                                             allAppointments: allAppointments,
+                                            conditions: conditions,
                                           ),
                                         ),
                                       );

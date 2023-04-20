@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'dart:convert';
 
 extension HexColor on Color {
   /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
@@ -110,6 +111,19 @@ Future<bool> SetJwt(String jwt) async {
   final SharedPreferences prefs = await _prefs;
   final bool status = await (prefs.setString('jwt', jwt));
   return status;
+}
+
+Future<bool> SetJSON(dynamic input, String key) async {
+  final SharedPreferences prefs = await _prefs;
+  final bool status = await (prefs.setString(key, json.encode(input)));
+  return status;
+}
+
+Future<dynamic> GetJSON(String key) async {
+  final SharedPreferences prefs = await _prefs;
+  // await prefs.remove("jwt");
+  dynamic output = (prefs.getString(key) ?? "");
+  return output;
 }
 
 Dio dio = Dio();
